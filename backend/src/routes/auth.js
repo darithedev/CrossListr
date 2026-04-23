@@ -7,7 +7,15 @@ import authMiddleware from '../middleware/authMiddleware.js'
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
-router.post('login', async (req, res) => {
+router.post('/login', async (req, res) => {
+    try {
+
+    } catch (error) {
+
+    }
+});
+
+router.post('/signup', async (req, res) => {
     try {
 
     } catch (error) {
