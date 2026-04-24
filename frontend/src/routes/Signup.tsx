@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 const Signup = () => {
     const navigate = useNavigate();
-
+    
     type SignupData = {
         name: string;
         phone_number: string;
@@ -58,7 +58,56 @@ const Signup = () => {
             className="singup-form"
             onSubmit={handleSubmit}
         >
-            
+            <h1>Enter Your Personal Information</h1>
+            <Form.Group controlId="name">
+                <Form.Label>Full Name: </Form.Label>
+                <Form.Control
+                    type="text"
+                    value={signupData.name}
+                    required
+                    placeholder='Riley Cares'
+                    onChange={handleName}
+                />
+            </Form.Group>
+            <Form.Group controlId="phone_number">
+                <Form.Label>Phone Number: </Form.Label>
+                <Form.Control
+                    type="tel"
+                    value={signupData.phone_number}
+                    placeholder='Enter 11-digit US phone number'
+                    onChange={handlePhoneNumber}
+                    maxLength={11}
+                />
+            </Form.Group>
+            <Form.Group controlId="email">
+                <Form.Label>Email: </Form.Label>
+                <Form.Control
+                    type="email"
+                    value={signupData.email}
+                    required
+                    placeholder='example@mail.com'
+                    onChange={handleEmail}
+                />
+            </Form.Group>
+            <Form.Group controlId="password">
+                <Form.Label>Password: </Form.Label>
+                <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    required
+                    value={signupData.password}
+                    onChange={handlePassword}
+                />
+            </Form.Group>
+            <Button type="submit" variant="outline-success">
+                Sign Up
+            </Button>
+            <Button type="button" variant="outline-warning" onClick={clearLogin}>
+                Reset
+            </Button>
+            {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
+                Back
+            </Button>*/}
         </Form>
     )
 }
