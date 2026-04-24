@@ -49,6 +49,7 @@ const Login = () => {
                     type="email"
                     value={loginData.email}
                     placeholder='example@mail.com'
+                    required
                     onChange={handleEmail}
                 />
             </Form.Group>
