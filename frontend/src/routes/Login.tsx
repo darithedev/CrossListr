@@ -5,31 +5,31 @@ import { useNavigate } from 'react-router-dom'
 const Login = () => {
     const navigate = useNavigate();
     type LoginData = {
-        name: string;
         email: string;
+        password: string;
     };
 
     const [loginData, setLoginData] = useState<LoginData>({
-        name: "",
-        email: ""
+        email: "",
+        password: ""
     });
-
-    const handleName = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const name = event.target.value;
-        setLoginData((prev) => ({ ...prev, name}));
-    };
 
     const handleEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
         const email = event.target.value;
         setLoginData((prev) => ({ ...prev, email}));
     };
 
+        const handlePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const password = event.target.value;
+        setLoginData((prev) => ({ ...prev, password}));
+    };
+
     const clearLogin = () => {
         setLoginData({
-            name: "",
-            email: ""
+            email: "",
+            password: ""
         });
-    }
+    };
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -42,17 +42,7 @@ const Login = () => {
             className="login-form"
             onSubmit={handleSubmit}
         >
-            <h1>Login</h1>
-            <Form.Group controlId="name">
-                <Form.Label>Name: </Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="Riley Cares"
-                    required
-                    value={loginData.name}
-                    onChange={handleName}
-                />
-            </Form.Group>
+            <h1>Log In</h1>
             <Form.Group controlId="email">
                 <Form.Label>Email: </Form.Label>
                 <Form.Control
@@ -62,8 +52,18 @@ const Login = () => {
                     onChange={handleEmail}
                 />
             </Form.Group>
+            <Form.Group controlId="password">
+                <Form.Label>Password: </Form.Label>
+                <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    required
+                    value={loginData.password}
+                    onChange={handlePassword}
+                />
+            </Form.Group>
             <Button type="submit" variant="outline-success">
-                Submit
+                Log In
             </Button>
             <Button type="button" variant="outline-warning" onClick={clearLogin}>
                 Reset
