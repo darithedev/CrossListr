@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const Login = () => {
     const navigate = useNavigate();
@@ -31,11 +32,23 @@ const Login = () => {
         });
     };
 
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("Submitted!")
-        clearLogin();
-    }
+        const URL = import.meta.env.VITE_API_URL;
+        try {
+            const response = await axios.post(`${URL}/v1/auth/login`, loginData);
+
+            if (response.status === 200) {
+                clearLogin();
+                alert("Sucessfully logged in!")
+                navigate('/');
+            }
+
+        } catch (error: unknown) {
+            alert("Incorrect email or password. Please Try Again");
+            console.error(error);
+        }
+    };
 
     return (
         <Form 
