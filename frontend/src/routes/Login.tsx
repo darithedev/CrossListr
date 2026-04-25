@@ -41,7 +41,7 @@ const Login = () => {
             if (response.status === 200) {
                 clearLogin();
                 alert("Sucessfully logged in!")
-                navigate('/');
+                navigate('/home');
             }
 
         } catch (error: unknown) {
