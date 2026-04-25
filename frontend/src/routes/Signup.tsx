@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -48,11 +49,24 @@ const Signup = () => {
         });
     };
 
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("Submitted!")
-        clearLogin();
-    }
+        const URL = import.meta.env.VITE_API_URL;
+        try {
+            const response = await axios.post(`${URL}/v1/auth/signup`, signupData);
+
+            if (response.status === 200) {
+                clearLogin();
+                alert("Sucessfully signed up!")
+                navigate('/home');
+            }
+
+        } catch (error: unknown) {
+            alert("Somethingwent wrong. Please Try Again");
+            console.error(error);
+        }
+    };
+
     return (
         <Form 
             className="singup-form"
