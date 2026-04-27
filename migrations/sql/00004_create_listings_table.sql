@@ -1,0 +1,9 @@
+CREATE TABLE listings ( 
+    id BIGSERIAL PRIMARY KEY,
+    item_id BIGINT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    platform VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    external_id VARCHAR(100),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

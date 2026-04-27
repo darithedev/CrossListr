@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: crosslistr
+      POSTGRES_PASSWORD: crosslistr
+      POSTGRES_DB: crosslistr_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crosslistr -d crosslistr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  migrations:
+    build:
+      context: ./migrations
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: "3000"
+      DATABASE_URL: postgresql://crosslistr:crosslistr@postgres:5432/crosslistr_db
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    networks:
+      - app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  pgdata:
