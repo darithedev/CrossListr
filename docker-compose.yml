@@ -36,6 +36,8 @@ services:
     environment:
       PORT: "3000"
       DATABASE_URL: postgresql://crosslistr:crosslistr@postgres:5432/crosslistr_db
+      # Create a 256-bits long string and add it as jwt secret then remove this comment and uncomment below
+      # JWT_SECRET:
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -48,6 +50,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000/api
     depends_on:
       - backend
     ports:
