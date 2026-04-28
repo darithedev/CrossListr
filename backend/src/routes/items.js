@@ -4,6 +4,46 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.get('/', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        if (userId === null) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        }
+
+        const result = await pool.query(
+            `SELECT 
+                items.id, 
+                items.title, 
+                items.description, 
+                items.category, 
+                items.condition, 
+                items.price, 
+                items.item_images,
+                items.source, 
+                items.external_id,
+                items.created_at,
+                items.updated_at,
+                users.name 
+                AS listed_by
+            FROM items
+            JOIN users ON items.user_id = users.id
+            WHERE users.id = $1;`,
+            [userId]
+        );
+
+        return res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('GET /items failed:', error);
+        return res.status(500).json({
+            error: 'Error! Could not get all items.'
+        });
+    }
+});
+
 router.post('/', authMiddleware, async(req, res) => {
     try {
         const userId = req.userId;
