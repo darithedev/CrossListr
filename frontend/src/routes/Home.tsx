@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import ItemCard from '../components/ItemCard';
 
 type HomeProps = {
     logout: () => void
@@ -10,6 +11,7 @@ const Home = ({ logout }: HomeProps) => {
     return (
         <div className="home-container">
             <h1>Hello Home Route</h1>
+            <ItemCard />
             <button onClick={() => {logout(), navigate('/login')}}>Logout</button>
         </div>
     )
