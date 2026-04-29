@@ -3,7 +3,11 @@ import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const Login = () => {
+type LoginProps = {
+    login: () => void
+}
+
+const Login = ({ login }: LoginProps) => {
     const navigate = useNavigate();
     type LoginData = {
         email: string;
@@ -20,7 +24,7 @@ const Login = () => {
         setLoginData((prev) => ({ ...prev, email}));
     };
 
-        const handlePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
         const password = event.target.value;
         setLoginData((prev) => ({ ...prev, password}));
     };
@@ -40,7 +44,8 @@ const Login = () => {
 
             if (response.status === 200) {
                 clearLogin();
-                alert("Sucessfully logged in!")
+                alert("Sucessfully logged in!");
+                login();
                 navigate('/home');
             }
 
