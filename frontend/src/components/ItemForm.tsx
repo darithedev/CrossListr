@@ -57,6 +57,21 @@ const ItemForm = () => {
         setItem((prev) => ({ ...prev, price }));
     };
 
+    const clearForm = () => {
+        setItem({ 
+            item_images: [],
+            title: "",
+            description: "",
+            category: "",
+            condition: "",
+            price: 0
+        });
+    };
+
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+    };
+
     return (
         <Form>
             
