@@ -3,7 +3,11 @@ import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const ItemForm = () => {
+type EditingProps = {
+    isEditing: boolean;
+};
+
+const ItemForm = ({ isEditing }: EditingProps) => {
     const navigate = useNavigate();
 
     type ItemData = {
@@ -136,7 +140,6 @@ const ItemForm = () => {
             </Form.Group>
         </Form>
     )
-
 }
 
 export default ItemForm; 
