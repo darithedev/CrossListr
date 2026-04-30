@@ -24,6 +24,39 @@ const ItemForm = () => {
         price: 0
     });
 
+    const handleItemImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const images = event.target.files;
+
+        if (!images) return;
+
+        // Complete logic for storing images
+    };
+
+    const handleTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const title = event.target.value;
+        setItem((prev) => ({ ...prev, title }));
+    };
+
+    const handleDescription = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const description = event.target.value;
+        setItem((prev) => ({ ...prev, description }));
+    };
+
+    const handleCategory = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const category = event.target.value;
+        setItem((prev) => ({ ...prev, category }));
+    };
+
+    const handleCondition = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const condition = event.target.value;
+        setItem((prev) => ({ ...prev, condition }));
+    };
+
+    const handlePrice = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const price = Number(event.target.value);
+        setItem((prev) => ({ ...prev, price }));
+    };
+
     return (
         <Form>
             
