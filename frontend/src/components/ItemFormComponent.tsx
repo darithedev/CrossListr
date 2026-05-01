@@ -3,6 +3,16 @@ import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+type ItemData = {
+    id: string;
+    item_images: string[];
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+};
+
 type EditingProps = {
     isEditing: boolean;
 };
