@@ -15,6 +15,7 @@ type ItemData = {
 
 type EditingProps = {
     isEditing: boolean;
+    itemData: ItemData;
 };
 
 const ItemForm = ({ isEditing }: EditingProps) => {
