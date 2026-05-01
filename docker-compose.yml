@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: crosslistr
-      POSTGRES_PASSWORD: crosslistr
-      POSTGRES_DB: crosslistr_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
     environment:
       PORT: "3000"
-      DATABASE_URL: postgresql://crosslistr:crosslistr@postgres:5432/crosslistr_db
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       migrations:
         condition: service_completed_successfully
