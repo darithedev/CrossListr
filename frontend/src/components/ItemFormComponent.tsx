@@ -18,7 +18,7 @@ type EditingProps = {
     itemData: ItemData;
 };
 
-const ItemForm = ({ isEditing }: EditingProps) => {
+const ItemForm = ({ isEditing, itemData }: EditingProps) => {
     const navigate = useNavigate();
 
     type ItemData = {
