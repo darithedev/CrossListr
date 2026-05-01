@@ -10,5 +10,6 @@ CREATE TABLE items (
     source VARCHAR(20) NOT NULL DEFAULT 'manual',
     external_id VARCHAR(100),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (source, external_id)
 );
