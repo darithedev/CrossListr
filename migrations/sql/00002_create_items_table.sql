@@ -1,0 +1,23 @@
+CREATE TABLE items ( 
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft',
+    title VARCHAR(80),
+    description TEXT,
+    category VARCHAR(50),
+    condition VARCHAR(20),
+    price NUMERIC(10,2),
+    item_images TEXT[],
+    source VARCHAR(20) NOT NULL DEFAULT 'manual',
+    external_id VARCHAR(100),
+    CHECK (status = 'draft' OR title IS NOT NULL),
+    CHECK (status = 'draft' OR description IS NOT NULL),
+    CHECK (status = 'draft' OR category IS NOT NULL),
+    CHECK (status = 'draft' OR condition IS NOT NULL),
+    CHECK (status = 'draft' OR price IS NOT NULL),
+    CHECK (status = 'draft' OR (item_images IS NOT NULL AND cardinality(item_images) > 0)),
+    CHECK (item_images is NULL OR cardinality(item_images) <= 12),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (source, external_id)
+);
