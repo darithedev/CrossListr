@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { Form, Button } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
 
 type ItemData = {
     id: string;
@@ -20,25 +18,8 @@ type EditingProps = {
 };
 
 const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
-    const navigate = useNavigate();
 
-    type ItemData = {
-        item_images: string[];
-        title: string;
-        description: string;
-        category: string;
-        condition: string;
-        price: number;
-    };
-
-    const [item, setItem] = useState<ItemData>({
-        item_images: [],
-        title: "",
-        description: "",
-        category: "",
-        condition: "",
-        price: 0
-    });
+    const [item, setItem] = useState<ItemData>(itemData);
 
     const handleItemImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const images = event.target.files;
