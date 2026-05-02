@@ -1,16 +1,28 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Form, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { UserContext } from '../context/UserContext'
 
 const Signup = () => {
     const navigate = useNavigate();
+    const auth = useContext(UserContext);
     
     type SignupData = {
         name: string;
         phone_number: string;
         email: string;
         password: string;
+    };
+
+    type AuthResponse = {
+        token: string;
+        user: {
+            id: string;
+            name: string;
+            email: string;
+            phone_number: number;
+        };
     };
 
     const [signupData, setSignupData] = useState<SignupData>({
@@ -51,13 +63,20 @@ const Signup = () => {
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!auth) {
+            return;
+        }
+
         const URL = import.meta.env.VITE_API_URL;
         try {
             const response = await axios.post(`${URL}/v1/auth/signup`, signupData);
 
             if (response.status === 200) {
+                const { token, user } = response.data as AuthResponse;
                 clearLogin();
                 alert("Sucessfully signed up!")
+                auth.login(token, user);
                 navigate('/home');
             }
 
