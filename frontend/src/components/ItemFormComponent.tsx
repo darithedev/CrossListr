@@ -79,10 +79,10 @@ const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
 
     return (
         <Form 
-            className="form-citem"
+            className="form-item"
             onSubmit={handleSubmit}
         >
-            <h2>New Item</h2>
+            <h2>{!isEditing ? "New Item" : "Edit Item"}</h2>
             <Form.Group controlId="title">
                 <Form.Label>Title: </Form.Label>
                 <Form.Control
