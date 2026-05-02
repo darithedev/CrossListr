@@ -74,6 +74,7 @@ const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
+        onSave(item);
     };
 
     return (
@@ -142,4 +143,4 @@ const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
     )
 }
 
-export default ItemForm; 
+export default ItemFormComponent; 
