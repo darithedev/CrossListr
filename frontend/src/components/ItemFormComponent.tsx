@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Form, Button } from 'react-bootstrap'
 
 type ItemData = {
@@ -65,6 +65,12 @@ const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
             price: 0
         });
     };
+
+    useEffect(() => {
+        if (isEditing && itemData) {
+            setItem(itemData);
+        }
+    }, [isEditing, itemData]);
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
