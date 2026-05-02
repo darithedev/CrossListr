@@ -88,4 +88,50 @@ router.post('/', authMiddleware, async(req, res) => {
     }
 });
 
+router.get('/:id', authMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.userId;
+        const { id } = req.params;
+
+        if (userId === null) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } else if (id === null || isNaN(id)) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            })
+        }
+
+        const result = await pool.query(
+            `SELECT 
+                items.id,
+                items.title,
+                items.category, 
+                items.condition, 
+                items.price, 
+                items.item_images,
+                items.source, 
+                items.external_id,
+                items.created_at,
+                items.updated_at
+            WHERE items.id = $1 AND user_id = $2`,
+            [id, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'This item does not exist.'
+            });
+        }
+
+        return res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('GET /items/:id failed:', error);
+        return res.status(500).json({
+            error: 'Error! Could not get item.'
+        });
+    }
+});
+
 export default router;
