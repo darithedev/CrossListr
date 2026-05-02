@@ -16,9 +16,10 @@ type ItemData = {
 type EditingProps = {
     isEditing: boolean;
     itemData: ItemData;
+    onSave: (item: ItemData) => void;
 };
 
-const ItemForm = ({ isEditing, itemData }: EditingProps) => {
+const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
     const navigate = useNavigate();
 
     type ItemData = {
