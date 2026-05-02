@@ -55,7 +55,8 @@ const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
     };
 
     const clearForm = () => {
-        setItem({ 
+        setItem({
+            id: "",
             item_images: [],
             title: "",
             description: "",
