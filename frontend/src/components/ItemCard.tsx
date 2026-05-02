@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { Card, Button } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 
 type Item = {
     id: string;
     title: string;
     item_images: string[];
+};
+
+type ItemCardProps = {
+    items: Item[];
 }
 
-const ItemCard = () => {
-    const [items, setItems] = useState<Item[]>([]);
+const ItemCard = ({ items }: ItemCardProps) => {
+    const navigate = useNavigate();
 
     return (
         <>
@@ -18,6 +23,11 @@ const ItemCard = () => {
                      <Card.Body>
                         <Card.Title>{item.title}</Card.Title>
                         <Button variant="primary">Select</Button>
+                        <Button onClick={() => 
+                            navigate(`/items/${item.id}/edit`)
+                        }>
+                            Edit
+                        </Button>
                     </Card.Body>
                 </Card>
             ))}
