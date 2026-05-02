@@ -65,4 +65,22 @@ router.post('/signup', async (req, res) => {
     }
 });
 
+router.get('/me', authMiddleware, async(req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, name, phone_number, email FROM users WHERE id = $1`,
+            [req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User could not be found.' });
+        };
+
+        res.status(200).json({ user: result.rows[0] });
+    } catch (error) {
+        console.error('Error! Could not get user.');
+        res.status(500).json({ error: 'Error! Could not get user.' });
+    }
+});
+
 export default router;
