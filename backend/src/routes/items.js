@@ -192,4 +192,37 @@ router.put('/:id', authMiddleware, async (req,res) => {
     }
 });
 
+router.delete('/:id', authMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.userId;
+        const { id } = req.params;
+        
+        if (userId === null) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } else if (id === null) {
+            return res.status(400).json({
+                error: 'Could not find item.'
+            });
+        }
+
+        const result = await pool.query(
+            `DELETE FROM items WHERE user_id = $1 AND id = $2 RETURNING items.id, items.title,`,
+            [userId, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: 'Item was not found.' });
+        };
+
+        return res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('DELETE /items/:id failed:', error);
+        return res.status(500).json({
+            error: 'Could not delete this item.'
+        });
+    }
+});
+
 export default router;
