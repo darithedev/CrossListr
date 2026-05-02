@@ -1,16 +1,18 @@
+import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-type HomeProps = {
-    logout: () => void
-};
-
-const Home = ({ logout }: HomeProps) => {
+import { UserContext } from '../context/UserContext'
+const Home = () => {
     const navigate = useNavigate();
+    const auth = useContext(UserContext);
 
+    const handleLogout = () => {
+        auth?.logout();
+        navigate('/login');
+    }
     return (
         <div className="home-container">
             <h1>Hello Home Route</h1>
-            <button onClick={() => {logout(), navigate('/login')}}>Logout</button>
+            <button onClick={() => handleLogout()}>Logout</button>
         </div>
     )
 };
