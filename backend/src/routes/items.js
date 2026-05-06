@@ -195,21 +195,23 @@ router.put('/:id', authMiddleware, async (req,res) => {
 
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
-        const { userId } = req.userId;
+        const userId = req.userId;
         const { id } = req.params;
         
-        if (userId === null) {
+        if (!userId) {
             return res.status(401).json({
                 error: 'Unauthenticated user.'
             });
-        } else if (id === null) {
+        } 
+
+        if (!id || isNaN(Number(id))) {
             return res.status(400).json({
-                error: 'Could not find item.'
+                error: 'invalid item id.'
             });
         }
 
         const result = await pool.query(
-            `DELETE FROM items WHERE user_id = $1 AND id = $2 RETURNING items.id, items.title,`,
+            `DELETE FROM items WHERE user_id = $1 AND id = $2 RETURNING items.id, items.title`,
             [userId, id]
         );
 
