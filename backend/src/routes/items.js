@@ -92,7 +92,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
         const { id } = req.params;
-        const itemId = Number(id);
 
         if (!userId) {
             return res.status(401).json({
@@ -121,7 +120,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 items.updated_at
             FROM items
             WHERE items.id = $1 AND user_id = $2`,
-            [itemId, userId]
+            [id, userId]
         );
 
         if (result.rows.length === 0) {
