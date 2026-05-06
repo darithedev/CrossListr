@@ -228,7 +228,16 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
-//POST /items/:id/images
+router.get('/:id/images', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+
+    } catch (error) {
+
+    }
+});
+
 router.post('/:id/images', authMiddleware, async(req, res) => {
     try {
         const userId = req.userId;
@@ -252,6 +261,12 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
                 error: "An image url and index number is required!"
             });
         };
+
+        if (Number(index_number) < 0 || Number(index_number > 11)) {
+            return res.status(400).json({
+                error: 'Index must be between 0 and 11 (max 12 images).'
+            });
+        }
 
         const result = await pool.query(
             `INSERT INTO item_images (item_id, image_url, index_number)
