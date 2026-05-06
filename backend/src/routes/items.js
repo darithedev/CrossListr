@@ -141,23 +141,21 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req,res) => {
     try {
-        const { userId } = req.userId;
+        const userId  = req.userId;
         const { id } = req.params;
         const { title, description, category, condition, price, item_images, source, externl_id} = req.body;
 
-        if (userId === null) {
+        if (!userId) {
             return res.status(401).json({
                 error: 'Unauthenticated user.'
             });
-        } else if (id === null) {
+        }
+            
+        if (!id || isNaN(Number(id))) {
             return res.status(400).json({
-                error: 'Could not find item.'
+                error: 'Invalid item id.'
             });
         }
-
-        if (isNaN(userId) || isNaN(id)) {
-            return res.status(400).json({error: 'Invalid user id or item id.'});
-        };
 
         if (!title || !description || !price) {
             return res.status(400).json({error: 'Title, description, and price are required fields.'});
@@ -180,7 +178,7 @@ router.put('/:id', authMiddleware, async (req,res) => {
                 items.created_at,
                 items.updated_at
             `,
-            [title, description, category, condition, price, item_images, source, externl_id]
+            [title, description, category, condition, price, item_images, source, externl_id, userId, id]
         );
 
         if (result.rows.length === 0) {
