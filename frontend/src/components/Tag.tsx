@@ -1,3 +1,7 @@
+type TagProps = {
+    tags: string[];
+}
+
 const Tag = () => {
     return (
         <>
