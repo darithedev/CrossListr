@@ -5,8 +5,9 @@ type TagProps = {
 const Tag = ({ tags }: TagProps) => {
 
     return (
-        <>
-        </>
+        <div className="tag-container">
+
+        </div>
     )
 }
 
