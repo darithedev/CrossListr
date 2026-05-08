@@ -2,7 +2,8 @@ type TagProps = {
     tags: string[];
 }
 
-const Tag = () => {
+const Tag = ({ tags }: TagProps) => {
+
     return (
         <>
         </>
