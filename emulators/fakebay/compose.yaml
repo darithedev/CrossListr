@@ -39,6 +39,10 @@ services:
     environment:
       FAKEBAY_AUTH_ADDR: ":8081"
       FAKEBAY_API_ADDR: ":8082"
+      FAKEBAY_CLIENT_ID: dev-fakebay-client
+      FAKEBAY_CLIENT_SECRET: dev-fakebay-secret
+      # Comma-separated exact redirect_uri values; empty = allow any http(s) redirect (dev only).
+      # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/oauth/callback"
     depends_on:
       fakebay-migrate:
         condition: service_completed_successfully
