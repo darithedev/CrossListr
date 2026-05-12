@@ -6,6 +6,7 @@ import router from './routes/index.js'
 const app = express();
 
 const PORT = process.env.PORT;
+const LISTEN_HOST = process.env.LISTEN_HOST ?? '127.0.0.1';
 
 app.use(express.json());
 app.use(cors());
@@ -29,7 +30,7 @@ app.get('/health', async (req, res) => {
     }
 });
 
-app.listen(PORT, '0.0.0.0', async () => {
+app.listen(PORT, LISTEN_HOST, async () => {
     if (await dbHealth()) {
         console.log(`Express server is running on port ${PORT}`);
     } else {

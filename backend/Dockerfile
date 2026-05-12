@@ -7,6 +7,8 @@ RUN npm ci
 
 COPY . .
 
+ENV LISTEN_HOST=0.0.0.0
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
