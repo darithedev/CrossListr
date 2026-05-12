@@ -12,6 +12,8 @@ This folder holds **local, dev-only HTTP APIs** (and optional UIs) that mimic re
 
 Each emulator has **`compose.yaml`**, **`migrations/`** (SQL + migrate image Dockerfile), **`backend/`** (Go), **`frontend/`** (React + Vite), and **`DELIVERY_PLAN.md`**.
 
+**FakeBay OAuth (browser + token exchange):** see **[`OAUTH_DEMO.md`](OAUTH_DEMO.md)** and [`fakebay/CONTRACT.md`](fakebay/CONTRACT.md).
+
 ## Run with Docker
 
 **All three** (requires Compose [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include/) support, Compose v2.20+):
