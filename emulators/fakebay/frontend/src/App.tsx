@@ -1,152 +1,62 @@
-import { useCallback, useMemo, useState } from 'react'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import AuthHelpPage from './AuthHelpPage'
+import DemoPage from './DemoPage'
+import Home from './Home'
+import ListingsPage from './ListingsPage'
+import LoginPage from './LoginPage'
+import NotFound from './NotFound'
+import { SessionProvider, useSession } from './SessionContext'
 
-function publishedAuthBase() {
-  const { protocol, hostname } = window.location
-  return `${protocol}//${hostname}:14181`
-}
+function NavBar() {
+  const { session, loading, logout } = useSession()
 
-function publishedApiBase() {
-  const { protocol, hostname } = window.location
-  return `${protocol}//${hostname}:14182`
+  return (
+    <header className="top">
+      <nav>
+        <Link to="/">FakeBay</Link>
+        <span className="nav-sep">·</span>
+        <Link to="/listings">Listings</Link>
+        <span className="nav-spacer" />
+        {loading ? (
+          <span className="muted nav-session">…</span>
+        ) : session ? (
+          <span className="nav-session">
+            <span className="nav-email muted" title="Signed in">
+              {session.email}
+            </span>
+            <button type="button" className="nav-logout" onClick={() => void logout()}>
+              Log out
+            </button>
+          </span>
+        ) : (
+          <Link to="/login" className="nav-signin">
+            Sign in
+          </Link>
+        )}
+        <span className="nav-sep nav-dev-sep">·</span>
+        <Link to="/demo" className="nav-demo">
+          OAuth demo
+        </Link>
+      </nav>
+    </header>
+  )
 }
 
 export default function App() {
-  const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client'
-  const authBase = useMemo(publishedAuthBase, [])
-  const apiBase = useMemo(publishedApiBase, [])
-
-  const redirectUri = useMemo(() => `${window!.location.origin}/oauth/callback`, [])
-
-  const authorizeHref = useMemo(() => {
-    const u = new URL('/oauth2/authorize', authBase)
-    u.searchParams.set('client_id', clientId)
-    u.searchParams.set('response_type', 'code')
-    u.searchParams.set('redirect_uri', redirectUri)
-    u.searchParams.set('scope', 'https://api.ebay.com/oauth/api_scope')
-    u.searchParams.set('state', 'fakebay-ui')
-    return u.toString()
-  }, [authBase, clientId, redirectUri])
-
-  const qs = useMemo(() => new URLSearchParams(window.location.search), [])
-  const path = window.location.pathname
-  const isCallback =
-    path === '/oauth/callback' ||
-    path.endsWith('/oauth/callback')
-
-  const code = isCallback ? qs.get('code') : null
-  const oauthError = isCallback ? qs.get('error') : null
-  const oauthErrorDesc = isCallback ? qs.get('error_description') : null
-
-  const [accessToken, setAccessToken] = useState('')
-  const [whoami, setWhoami] = useState<string | null>(null)
-  const [whoamiErr, setWhoamiErr] = useState<string | null>(null)
-
-  const callWhoami = useCallback(async () => {
-    setWhoami(null)
-    setWhoamiErr(null)
-    const t = accessToken.trim()
-    if (!t) {
-      setWhoamiErr('Paste an access_token first (from the token response).')
-      return
-    }
-    try {
-      const res = await fetch(`${apiBase}/api/v1/oauth/whoami`, {
-        headers: { Authorization: `Bearer ${t}` },
-      })
-      const text = await res.text()
-      if (!res.ok) {
-        setWhoamiErr(`${res.status} ${text}`)
-        return
-      }
-      setWhoami(text)
-    } catch (e) {
-      setWhoamiErr(e instanceof Error ? e.message : String(e))
-    }
-  }, [accessToken, apiBase])
-
-  const tokenCurlExample = useMemo(() => {
-    if (!code) return ''
-    const escSh = (s: string) => s.replace(/'/g, `'\\''`)
-    return (
-      `curl -sS -u '${escSh(clientId)}:YOUR_SECRET' -X POST '${apiBase}/identity/v1/oauth2/token' \\\n` +
-      `  -H 'Content-Type: application/x-www-form-urlencoded' \\\n` +
-      `  --data-urlencode 'grant_type=authorization_code' \\\n` +
-      `  --data-urlencode 'code=${escSh(code)}' \\\n` +
-      `  --data-urlencode 'redirect_uri=${escSh(redirectUri)}'`
-    )
-  }, [apiBase, clientId, code, redirectUri])
-
   return (
-    <main className="wrap">
-      <h1>FakeBay</h1>
-      <p>eBay-shaped emulator — OAuth demo (see <code>CONTRACT.md</code> in the FakeBay folder).</p>
-
-      <section className="panel">
-        <h2>1. Authorization</h2>
-        <p className="cta-row">
-          <button
-            type="button"
-            className="primary"
-            onClick={() => {
-              window.location.assign(authorizeHref)
-            }}
-          >
-            Sign in with FakeBay
-          </button>
-          <a className="secondary" href={authorizeHref}>
-            Open in new tab
-          </a>
-        </p>
-        <p className="muted">
-          Uses <code>GET /oauth2/authorize</code> on{' '}
-          <code>{authBase}</code>, then you land back here with <code>code=…</code> in the URL.
-        </p>
-        <p className="muted">
-          API (token + whoami): <code>{apiBase}</code>
-        </p>
-      </section>
-
-      {isCallback && (
-        <section className="panel">
-          <h2>2. Callback</h2>
-          {oauthError && (
-            <p className="err">
-              <strong>{oauthError}</strong>
-              {oauthErrorDesc ? ` — ${oauthErrorDesc}` : null}
-            </p>
-          )}
-          {code && (
-            <>
-              <p>
-                Authorization <code>code</code> (exchange from your backend with HTTP Basic —
-                do not put <code>client_secret</code> in the browser):
-              </p>
-              <pre className="code">{code}</pre>
-              <p className="muted">Example token exchange (run on your machine; replace YOUR_SECRET):</p>
-              {tokenCurlExample ? <pre className="code">{tokenCurlExample}</pre> : null}
-            </>
-          )}
-        </section>
-      )}
-
-      <section className="panel">
-        <h2>3. Try Bearer API</h2>
-        <p className="muted">Paste <code>access_token</code> from the token JSON, then call the sample protected route.</p>
-        <textarea
-          className="token"
-          value={accessToken}
-          onChange={(e) => setAccessToken(e.target.value)}
-          placeholder="access_token…"
-          rows={3}
-        />
-        <p>
-          <button type="button" className="primary" onClick={callWhoami}>
-            GET /api/v1/oauth/whoami
-          </button>
-        </p>
-        {whoamiErr && <p className="err">{whoamiErr}</p>}
-        {whoami && <pre className="code">{whoami}</pre>}
-      </section>
-    </main>
+    <SessionProvider>
+      <BrowserRouter>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/listings" element={<ListingsPage />} />
+          <Route path="/demo" element={<DemoPage />} />
+          <Route path="/demo/oauth/callback" element={<DemoPage />} />
+          <Route path="/auth" element={<AuthHelpPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </SessionProvider>
   )
 }

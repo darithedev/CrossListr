@@ -12,16 +12,55 @@ func health(w http.ResponseWriter, _ *http.Request) {
 }
 
 func main() {
+	dsn := env("DATABASE_URL", "")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is required (e.g. postgres://user:pass@host:5432/db?sslmode=disable)")
+	}
+	db, err := openDB(dsn)
+	if err != nil {
+		log.Fatalf("database: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	if err := ensureDemoUser(db); err != nil {
+		log.Fatalf("seed user: %v", err)
+	}
+
 	cfg := loadOAuthConfig()
 	store := newOAuthStore()
+	sm := newSessionManager()
+	uiOrigins := loadUiOrigins()
 
 	authAddr := env("FAKEBAY_AUTH_ADDR", ":8081")
 	apiAddr := env("FAKEBAY_API_ADDR", ":8082")
 
+	sessionMux := http.NewServeMux()
+	sessionMux.HandleFunc("POST /login", func(w http.ResponseWriter, r *http.Request) {
+		handleSessionLoginJSON(w, r, db, sm)
+	})
+	sessionMux.HandleFunc("POST /logout", func(w http.ResponseWriter, r *http.Request) {
+		handleSessionLogoutJSON(w, r, sm)
+	})
+	sessionMux.HandleFunc("GET /me", func(w http.ResponseWriter, r *http.Request) {
+		handleSessionMeJSON(w, r, sm)
+	})
+
 	auth := http.NewServeMux()
+	auth.HandleFunc("GET /", authRoot)
+	auth.Handle("/api/v1/session/", sessionAPICORS(uiOrigins, http.StripPrefix("/api/v1/session", sessionMux)))
 	auth.HandleFunc("GET /health", health)
 	auth.HandleFunc("GET /oauth2/authorize", func(w http.ResponseWriter, r *http.Request) {
-		handleAuthorize(w, r, cfg, store)
+		handleAuthorize(w, r, cfg, store, sm)
+	})
+	auth.HandleFunc("POST /oauth2/consent", func(w http.ResponseWriter, r *http.Request) {
+		handleConsentPost(w, r, cfg, store, sm)
+	})
+	auth.HandleFunc("GET /login", handleLoginGet)
+	auth.HandleFunc("POST /login", func(w http.ResponseWriter, r *http.Request) {
+		handleLoginPost(w, r, db, sm)
+	})
+	auth.HandleFunc("GET /logout", func(w http.ResponseWriter, r *http.Request) {
+		handleLogout(w, r, sm)
 	})
 
 	api := http.NewServeMux()
@@ -35,7 +74,7 @@ func main() {
 
 	go func() {
 		log.Printf("fakebay auth listening on %s", authAddr)
-		s := &http.Server{Addr: authAddr, Handler: withCORS(auth)}
+		s := &http.Server{Addr: authAddr, Handler: auth}
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatalf("auth server: %v", err)
 		}

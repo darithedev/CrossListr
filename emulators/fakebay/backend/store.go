@@ -10,6 +10,7 @@ import (
 type authCodeRecord struct {
 	clientID    string
 	redirectURI string
+	sub         string // resource owner (e.g. email) issued this code
 	expiresAt   time.Time
 }
 
@@ -58,7 +59,7 @@ func randomAuthCode() string {
 	return prefix + randomString(48)
 }
 
-func (s *oauthStore) issueAuthCode(clientID, redirectURI string, ttl time.Duration) string {
+func (s *oauthStore) issueAuthCode(clientID, redirectURI, sub string, ttl time.Duration) string {
 	code := randomAuthCode()
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -66,24 +67,25 @@ func (s *oauthStore) issueAuthCode(clientID, redirectURI string, ttl time.Durati
 	s.authCodes[code] = authCodeRecord{
 		clientID:    clientID,
 		redirectURI: redirectURI,
+		sub:         sub,
 		expiresAt:   time.Now().Add(ttl),
 	}
 	return code
 }
 
-func (s *oauthStore) consumeAuthCode(code, clientID, redirectURI string) bool {
+func (s *oauthStore) consumeAuthCode(code, clientID, redirectURI string) (sub string, ok bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.gcAuthCodesLocked()
 	rec, ok := s.authCodes[code]
 	if !ok || time.Now().After(rec.expiresAt) {
-		return false
+		return "", false
 	}
 	if rec.clientID != clientID || rec.redirectURI != redirectURI {
-		return false
+		return "", false
 	}
 	delete(s.authCodes, code)
-	return true
+	return rec.sub, true
 }
 
 func (s *oauthStore) gcAuthCodesLocked() {
@@ -95,17 +97,15 @@ func (s *oauthStore) gcAuthCodesLocked() {
 	}
 }
 
-const fakeSub = "fakebay-user"
-
-func (s *oauthStore) issueAccessAndRefresh(clientID string, accessTTL time.Duration) (access, refresh string, accessExp time.Time) {
+func (s *oauthStore) issueAccessAndRefresh(clientID, sub string, accessTTL time.Duration) (access, refresh string, accessExp time.Time) {
 	access = ebayLikeToken("i")
 	refresh = ebayLikeToken("r")
 	exp := time.Now().Add(accessTTL)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.accessTokens[access] = tokenRecord{sub: fakeSub, expiresAt: exp}
-	s.refreshTokens[refresh] = refreshRecord{clientID: clientID, sub: fakeSub}
+	s.accessTokens[access] = tokenRecord{sub: sub, expiresAt: exp}
+	s.refreshTokens[refresh] = refreshRecord{clientID: clientID, sub: sub}
 	return access, refresh, exp
 }
 

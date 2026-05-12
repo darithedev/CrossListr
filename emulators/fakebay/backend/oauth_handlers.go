@@ -10,66 +10,6 @@ import (
 	"time"
 )
 
-// --- GET /oauth2/authorize (auth listener) ---
-
-func handleAuthorize(w http.ResponseWriter, r *http.Request, cfg oauthConfig, store *oauthStore) {
-	q := r.URL.Query()
-	responseType := q.Get("response_type")
-	clientID := q.Get("client_id")
-	redirectURI := q.Get("redirect_uri")
-	scope := q.Get("scope")
-	state := q.Get("state")
-
-	if redirectURI == "" {
-		http.Error(w, `{"error":"invalid_request","error_description":"redirect_uri is required"}`, http.StatusBadRequest)
-		return
-	}
-
-	redirectOK, errParse := url.ParseRequestURI(redirectURI)
-	if errParse != nil || (redirectOK.Scheme != "http" && redirectOK.Scheme != "https") {
-		http.Error(w, `{"error":"invalid_request","error_description":"redirect_uri must be an absolute http(s) URL"}`, http.StatusBadRequest)
-		return
-	}
-
-	if responseType != "code" {
-		redirectOAuthError(w, r, redirectURI, state, "unsupported_response_type", "response_type must be code")
-		return
-	}
-
-	if clientID == "" {
-		redirectOAuthError(w, r, redirectURI, state, "invalid_request", "client_id is required")
-		return
-	}
-
-	if clientID != cfg.ClientID {
-		redirectOAuthError(w, r, redirectURI, state, "unauthorized_client", "unknown client_id")
-		return
-	}
-
-	if len(cfg.AllowedRedirectURIs) > 0 {
-		if _, allowed := cfg.AllowedRedirectURIs[redirectURI]; !allowed {
-			redirectOAuthError(w, r, redirectURI, state, "invalid_request", "redirect_uri is not registered for this client")
-			return
-		}
-	}
-
-	_ = scope // reserved for future scope checks (FakeBay ignores for MVP)
-
-	code := store.issueAuthCode(clientID, redirectURI, cfg.AuthCodeTTL)
-	to, err := url.Parse(redirectURI)
-	if err != nil {
-		http.Error(w, `{"error":"invalid_request","error_description":"invalid redirect_uri"}`, http.StatusBadRequest)
-		return
-	}
-	qOut := to.Query()
-	qOut.Set("code", code)
-	if state != "" {
-		qOut.Set("state", state)
-	}
-	to.RawQuery = qOut.Encode()
-	http.Redirect(w, r, to.String(), http.StatusFound)
-}
-
 func redirectOAuthError(w http.ResponseWriter, r *http.Request, redirectURI, state, errCode, description string) {
 	to, err := url.Parse(redirectURI)
 	if err != nil {
@@ -133,7 +73,8 @@ func handleTokenAuthCode(w http.ResponseWriter, r *http.Request, cfg oauthConfig
 		return
 	}
 
-	if !store.consumeAuthCode(code, clientID, redir) {
+	sub, ok := store.consumeAuthCode(code, clientID, redir)
+	if !ok {
 		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error":             "invalid_grant",
 			"error_description": "code is invalid, expired, or redirect_uri does not match",
@@ -142,7 +83,7 @@ func handleTokenAuthCode(w http.ResponseWriter, r *http.Request, cfg oauthConfig
 	}
 
 	accessTTL := time.Duration(cfg.AccessTokenTTLSeconds) * time.Second
-	at, rt, _ := store.issueAccessAndRefresh(clientID, accessTTL)
+	at, rt, _ := store.issueAccessAndRefresh(clientID, sub, accessTTL)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"access_token":  at,
 		"expires_in":    cfg.AccessTokenTTLSeconds,

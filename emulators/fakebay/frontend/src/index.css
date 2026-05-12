@@ -7,6 +7,98 @@ body {
   background: #0f1419;
   color: #e6edf3;
 }
+.top {
+  border-bottom: 1px solid #30363d;
+  padding: 0.65rem 1rem;
+  background: #161b22;
+}
+.top nav {
+  max-width: 40rem;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+.nav-spacer {
+  flex: 1;
+  min-width: 0.5rem;
+}
+.nav-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-email {
+  font-size: 0.85rem;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-logout {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #e6edf3;
+  cursor: pointer;
+}
+.nav-logout:hover {
+  filter: brightness(1.08);
+}
+.nav-signin {
+  font-weight: 600;
+}
+.panel label {
+  display: block;
+  margin-top: 0.75rem;
+}
+.panel label:first-child {
+  margin-top: 0;
+}
+.panel input[type='email'],
+.panel input[type='password'],
+.panel input[type='text'] {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.45rem;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: inherit;
+  font: inherit;
+}
+.top a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+.top a:hover {
+  text-decoration: underline;
+}
+.nav-sep {
+  color: #484f58;
+  user-select: none;
+}
+.wrap .lead {
+  color: #8b949e;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.links {
+  margin: 1.25rem 0;
+  padding-left: 1.25rem;
+}
+.links li {
+  margin-bottom: 0.5rem;
+}
+.links a {
+  color: #58a6ff;
+  font-weight: 600;
+}
 .wrap {
   max-width: 40rem;
   margin: 3rem auto;
@@ -86,4 +178,26 @@ code {
   background: #21262d;
   padding: 0.12em 0.35em;
   border-radius: 4px;
+}
+.nav-demo {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+.nav-demo:hover {
+  color: #58a6ff;
+}
+.nav-dev-sep {
+  color: #484f58;
+}
+.panel-dev {
+  margin-top: 2rem;
+}
+.dev-heading {
+  margin-top: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e6edf3;
+}
+.empty-hint {
+  margin: 0;
 }
