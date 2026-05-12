@@ -37,12 +37,15 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
+      DATABASE_URL: postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable
       FAKEBAY_AUTH_ADDR: ":8081"
       FAKEBAY_API_ADDR: ":8082"
       FAKEBAY_CLIENT_ID: dev-fakebay-client
       FAKEBAY_CLIENT_SECRET: dev-fakebay-secret
+      FAKEBAY_CLIENT_DISPLAY_NAME: CrossListr
+      FAKEBAY_UI_ORIGINS: "http://localhost:14180,http://127.0.0.1:14180"
       # Comma-separated exact redirect_uri values; empty = allow any http(s) redirect (dev only).
-      # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/oauth/callback"
+      # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/demo/oauth/callback"
     depends_on:
       fakebay-migrate:
         condition: service_completed_successfully
