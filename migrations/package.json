@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "scripts": {
+    "migrate": "node src/migrations.js"
+  },
+  "devDependencies": {
+    "postgres-migrations": "^5.3.0"
+  }
+}

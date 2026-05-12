@@ -21,16 +21,33 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: crosslistr
-      POSTGRES_PASSWORD: crosslistr
-      POSTGRES_DB: crosslistr
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - crosslistr_pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U crosslistr -d crosslistr"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app
+
+  migrations:
+    build:
+      context: ./migrations
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - app
 
@@ -39,18 +56,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      PORT: "3000"
+      PORT: ${PORT}
       LISTEN_HOST: "0.0.0.0"
-      DATABASE_URL: postgresql://crosslistr:crosslistr@postgres:5432/crosslistr
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
       FAKEBAY_AUTH_URL: http://fakebay-backend:8081
       FAKEBAY_API_URL: http://fakebay-backend:8082
       FAKIFY_API_URL: http://fakify-backend:8080
       FAKESTY_API_URL: http://fakesty-backend:8080
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
     ports:
       - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - app
       - emulators-integration
@@ -59,10 +77,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "5173:80"
+      args:
+        VITE_API_URL: ${VITE_API_URL}
     depends_on:
       - backend
+    ports:
+      - "5173:5173"
     networks:
       - app
       - emulators-integration
@@ -75,4 +95,4 @@ networks:
     name: crosslistr-emulators-integration
 
 volumes:
-  crosslistr_pgdata:
+  pgdata:
