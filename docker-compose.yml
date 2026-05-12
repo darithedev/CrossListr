@@ -1,0 +1,78 @@
+# CrossListr app (connects to emulators on `crosslistr-emulators-integration`).
+#
+# 1) Start emulators first (creates the shared network):
+#    docker compose -f emulators/compose.yaml up -d --build
+# 2) Start CrossListr:
+#    docker compose up -d --build
+#
+# From Node inside `backend`, use emulator DNS aliases:
+#   http://fakebay-backend:8081  (auth listener)
+#   http://fakebay-backend:8082  (API / OAuth token path later)
+#   http://fakify-backend:8080
+#   http://fakesty-backend:8080
+#   UIs: http://fakebay-frontend:80  etc.
+#
+# Browser on your machine still uses published ports:
+#   localhost:14180, localhost:14280, localhost:14380
+
+name: crosslistr
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: crosslistr
+      POSTGRES_PASSWORD: crosslistr
+      POSTGRES_DB: crosslistr
+    volumes:
+      - crosslistr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crosslistr -d crosslistr"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: "3000"
+      LISTEN_HOST: "0.0.0.0"
+      DATABASE_URL: postgresql://crosslistr:crosslistr@postgres:5432/crosslistr
+      FAKEBAY_AUTH_URL: http://fakebay-backend:8081
+      FAKEBAY_API_URL: http://fakebay-backend:8082
+      FAKIFY_API_URL: http://fakify-backend:8080
+      FAKESTY_API_URL: http://fakesty-backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+      - emulators-integration
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - app
+      - emulators-integration
+
+networks:
+  app:
+    driver: bridge
+  emulators-integration:
+    external: true
+    name: crosslistr-emulators-integration
+
+volumes:
+  crosslistr_pgdata:
