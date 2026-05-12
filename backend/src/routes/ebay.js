@@ -4,4 +4,12 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Routor();
 
+routor.post('/auth', authMiddleware, async (req, res) => {
+    try {
+
+    } catch (error) {
+        
+    }
+});
+
 export default router;
