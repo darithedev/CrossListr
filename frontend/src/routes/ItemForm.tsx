@@ -29,6 +29,12 @@ type CloudinaryWidget = {
     destroy: () => void;
 };
 
+type CloudinaryPayload = {
+    secure_url: string;
+    url: string;
+    [additional_response: string]: unknown;
+}
+
 const ItemForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
