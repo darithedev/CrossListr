@@ -20,7 +20,14 @@ const newItem: ItemData = {
     category: "",
     condition: "",
     price: 0
-}
+};
+
+type CloudinaryWidget = {
+    open: () => void;
+    close: () => void;
+    hide: () => void;
+    destroy: () => void;
+};
 
 const ItemForm = () => {
     const { id } = useParams();
