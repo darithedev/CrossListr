@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import AuthHelpPage from './AuthHelpPage'
+import BrowsePage from './BrowsePage'
 import DemoPage from './DemoPage'
 import Home from './Home'
 import ListingsPage from './ListingsPage'
@@ -15,7 +16,9 @@ function NavBar() {
       <nav>
         <Link to="/">FakeBay</Link>
         <span className="nav-sep">·</span>
-        <Link to="/listings">Listings</Link>
+        <Link to="/browse">Browse</Link>
+        <span className="nav-sep">·</span>
+        <Link to="/listings">My listings</Link>
         <span className="nav-spacer" />
         {loading ? (
           <span className="muted nav-session">…</span>
@@ -50,6 +53,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/browse" element={<BrowsePage />} />
           <Route path="/listings" element={<ListingsPage />} />
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/demo/oauth/callback" element={<DemoPage />} />

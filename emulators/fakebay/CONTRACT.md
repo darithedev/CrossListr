@@ -128,6 +128,34 @@ Browser form from the consent page. Validates session + CSRF, then either redire
 
 **Failure:** `401` JSON with `invalid_token`.
 
+## Seller listings CRUD (`User Access Token`, API listener)
+
+CrossListr (or other integrations) completes the **authorization code → token** flow, then calls these routes with **`Authorization: Bearer <access_token>`**. Tokens are scoped to the **seller** whose email is OAuth **`sub`**. Only listings with `seller_id` matching that user may be read, updated, or deleted.
+
+Listing JSON shape everywhere below:
+
+```json
+{
+  "id": 1,
+  "title": "…",
+  "description": "",
+  "priceCents": 9900,
+  "currency": "USD",
+  "createdAt": "…",
+  "updatedAt": "…"
+}
+```
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/v1/seller/listings` | Create. Body JSON: `{ "title", "description"?, "priceCents", "currency"? }`. `currency` defaults to **`USD`** (3-letter uppercase ISO 4217). |
+| `GET` | `/api/v1/seller/listings` | List seller’s listings, newest **`updated_at`** first. Query: `limit` (default **50**, max **100**). Response: `{ "listings": [ … ] }`. |
+| `GET` | `/api/v1/seller/listings/{id}` | Get one listing if owned by token user. |
+| `PATCH` | `/api/v1/seller/listings/{id}` | Partial update with any of `title`, `description`, `priceCents`, `currency`. At least one field required. **`updated_at`** is set server-side. |
+| `DELETE` | `/api/v1/seller/listings/{id}` | Hard delete owned listing. **`200`** `{ "ok": true, "id": … }`. |
+
+**Errors:** `401` (`invalid_token` / missing Bearer); `403` if token `sub` has no Postgres user (`user_not_found`); **`400`** (`invalid_json`, `validation_error`, `invalid_id`, `empty_patch`); **`404`** (`not_found`) if id missing or not owned.
+
 ## CORS
 
 The **API** listener sends permissive dev headers (`Access-Control-Allow-Origin: *`, etc.) and answers `OPTIONS` with `204` for browser `fetch` (e.g. `whoami`). The **auth** listener is intended for **top-level navigation** and **HTML forms** on the auth origin; it does not need broad CORS for the default flow.
@@ -135,3 +163,14 @@ The **API** listener sends permissive dev headers (`Access-Control-Allow-Origin:
 ## Health
 
 `GET /health` on each listener returns `{"status":"ok","emulator":"fakebay"}`.
+
+## API docs (Swagger) — API listener only
+
+OpenAPI **`3.0`** spec and Swagger UI are served by the **API** process (same host/port as token + seller routes):
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/openapi.yaml` | Machine-readable OpenAPI document |
+| `GET` | `/swagger` | Swagger UI (loads the spec from **`/openapi.yaml`**; Swagger assets from **jsdelivr** CDN in the browser) |
+
+Example: [`http://localhost:14182/swagger`](http://localhost:14182/swagger) when Compose maps `14182:8082`.

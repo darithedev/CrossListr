@@ -8,25 +8,26 @@ export default function Home() {
     <main className="wrap">
       <h1>FakeBay</h1>
       <p className="lead">
-        Emulator storefront for listings pushed from <strong>CrossListr</strong>. Sign in with a FakeBay account to
-        browse what’s been cross-listed to this marketplace.
+        Emulator storefront for listings pushed from <strong>CrossListr</strong>. Open the marketplace for every
+        seller, or sign in to see your own postings.
       </p>
 
-      {loading ? (
-        <p className="muted">…</p>
-      ) : session ? (
-        <p className="cta-row">
-          <Link to="/listings" className="primary">
-            View your listings
+      <p className="cta-row">
+        <Link to="/browse" className="primary">
+          Browse marketplace
+        </Link>
+        {loading ? (
+          <span className="muted">…</span>
+        ) : session ? (
+          <Link to="/listings" className="secondary">
+            My listings
           </Link>
-        </p>
-      ) : (
-        <p className="cta-row">
-          <Link to="/login" className="primary">
+        ) : (
+          <Link to="/login" className="secondary">
             Sign in
           </Link>
-        </p>
-      )}
+        )}
+      </p>
 
       <p className="muted" style={{ marginTop: '1.25rem' }}>
         <Link to="/auth">Which port is auth? (14180 vs 14181)</Link>

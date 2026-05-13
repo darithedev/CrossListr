@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func loadUiOrigins() []string {
@@ -104,4 +105,58 @@ func handleSessionMeJSON(w http.ResponseWriter, r *http.Request, sm *sessionMana
 		"email":  sess.email,
 		"userId": sess.userID,
 	})
+}
+
+func handleSessionListingsJSON(w http.ResponseWriter, r *http.Request, db *sql.DB, sm *sessionManager) {
+	w.Header().Set("Content-Type", "application/json")
+	sess, _, ok := sm.get(r)
+	if !ok || sess == nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "not signed in"})
+		return
+	}
+
+	rows, err := db.Query(
+		`SELECT id, title, description, price_cents, currency, created_at, updated_at
+		 FROM fakebay_listings WHERE seller_id = $1 ORDER BY updated_at DESC, id DESC`,
+		sess.userID,
+	)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "listings unavailable"})
+		return
+	}
+	defer func() { _ = rows.Close() }()
+
+	var listings []map[string]any
+	for rows.Next() {
+		var (
+			id      int64
+			title   string
+			desc    string
+			cents   int64
+			curr    string
+			created time.Time
+			updated time.Time
+		)
+		if err := rows.Scan(&id, &title, &desc, &cents, &curr, &created, &updated); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "listings unavailable"})
+			return
+		}
+		listings = append(listings, map[string]any{
+			"id":          id,
+			"title":       title,
+			"description": desc,
+			"priceCents":  cents,
+			"currency":    curr,
+			"createdAt":   created.UTC().Format(time.RFC3339),
+			"updatedAt":   updated.UTC().Format(time.RFC3339),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "listings unavailable"})
+		return
+	}
+	if listings == nil {
+		listings = []map[string]any{}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"listings": listings})
 }
