@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ItemFormComponent from '../components/ItemFormComponent'
 
@@ -41,6 +41,13 @@ const ItemForm = () => {
     const isEditing = id !== undefined;
 
     const [itemData, setItemData] = useState<ItemData>(newItem);
+
+    useEffect(() => {
+        const cloudinary = (window as any).cloundinary;
+
+        const widget = cloudinary.createUploadWidget()
+        
+    }, [])
 
     const saveItem = (item: ItemData) => {
         // Add axios for POST /item & PUT /item/:id here
