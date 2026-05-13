@@ -44,10 +44,21 @@ func main() {
 	sessionMux.HandleFunc("GET /me", func(w http.ResponseWriter, r *http.Request) {
 		handleSessionMeJSON(w, r, sm)
 	})
+	sessionMux.HandleFunc("GET /listings", func(w http.ResponseWriter, r *http.Request) {
+		handleSessionListingsJSON(w, r, db, sm)
+	})
+
+	catalogMux := http.NewServeMux()
+	catalogMux.HandleFunc("GET /listings", func(w http.ResponseWriter, r *http.Request) {
+		handleCatalogListingsJSON(w, r, db)
+	})
 
 	auth := http.NewServeMux()
-	auth.HandleFunc("GET /", authRoot)
+	// "GET /" alone conflicts with subtree patterns like "/api/v1/session/" on Go 1.22+ ServeMux; "/{$}"
+	// matches only the URL path "/" (exact root).
+	auth.HandleFunc("GET /{$}", authRoot)
 	auth.Handle("/api/v1/session/", sessionAPICORS(uiOrigins, http.StripPrefix("/api/v1/session", sessionMux)))
+	auth.Handle("/api/v1/catalog/", sessionAPICORS(uiOrigins, http.StripPrefix("/api/v1/catalog", catalogMux)))
 	auth.HandleFunc("GET /health", health)
 	auth.HandleFunc("GET /oauth2/authorize", func(w http.ResponseWriter, r *http.Request) {
 		handleAuthorize(w, r, cfg, store, sm)
@@ -64,12 +75,29 @@ func main() {
 	})
 
 	api := http.NewServeMux()
+	api.HandleFunc("GET /openapi.yaml", handleOpenAPISpec)
+	api.HandleFunc("GET /swagger", handleSwaggerUI)
 	api.HandleFunc("GET /health", health)
 	api.HandleFunc("POST /identity/v1/oauth2/token", func(w http.ResponseWriter, r *http.Request) {
 		handleToken(w, r, cfg, store)
 	})
 	api.HandleFunc("GET /api/v1/oauth/whoami", func(w http.ResponseWriter, r *http.Request) {
 		handleWhoami(w, r, store)
+	})
+	api.HandleFunc("POST /api/v1/seller/listings", func(w http.ResponseWriter, r *http.Request) {
+		handleSellerCreateListing(w, r, store, db)
+	})
+	api.HandleFunc("GET /api/v1/seller/listings", func(w http.ResponseWriter, r *http.Request) {
+		handleSellerListListings(w, r, store, db)
+	})
+	api.HandleFunc("GET /api/v1/seller/listings/{id}", func(w http.ResponseWriter, r *http.Request) {
+		handleSellerGetListing(w, r, store, db)
+	})
+	api.HandleFunc("PATCH /api/v1/seller/listings/{id}", func(w http.ResponseWriter, r *http.Request) {
+		handleSellerPatchListing(w, r, store, db)
+	})
+	api.HandleFunc("DELETE /api/v1/seller/listings/{id}", func(w http.ResponseWriter, r *http.Request) {
+		handleSellerDeleteListing(w, r, store, db)
 	})
 
 	go func() {

@@ -15,7 +15,10 @@ export default function NotFound() {
           <Link to="/login">Sign in</Link>
         </li>
         <li>
-          <Link to="/listings">Listings</Link>
+          <Link to="/browse">Browse marketplace</Link>
+        </li>
+        <li>
+          <Link to="/listings">My listings</Link>
         </li>
         <li>
           <Link to="/auth">Auth ports &amp; 404 help</Link>

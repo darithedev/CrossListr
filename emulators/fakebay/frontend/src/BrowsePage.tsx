@@ -1,47 +1,41 @@
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
 import { authBaseUrl } from './authBase'
 import { formatMoney } from './formatMoney'
-import { useSession } from './SessionContext'
 
-type ListingDTO = {
+type CatalogListing = {
   id: number
   title: string
   description: string
   priceCents: number
   currency: string
+  sellerEmail: string
   createdAt: string
 }
 
-/**
- * Signed-in shopper view — listings seeded in Postgres for this emulator (and eventually CrossListr).
- */
-export default function ListingsPage() {
-  const { session, loading } = useSession()
-  const [listings, setListings] = useState<ListingDTO[] | null>(null)
+/** Public view of every listing on the emulator (no sign-in). */
+export default function BrowsePage() {
+  const [listings, setListings] = useState<CatalogListing[] | null>(null)
   const [loadErr, setLoadErr] = useState<string | null>(null)
 
-  const fetchListings = useCallback(async () => {
+  const load = useCallback(async () => {
     const base = authBaseUrl()
-    const r = await fetch(`${base}/api/v1/session/listings`, { credentials: 'include' })
+    const r = await fetch(`${base}/api/v1/catalog/listings`)
     if (!r.ok) {
-      setLoadErr(r.status === 401 ? 'Session expired.' : `${r.status}`)
+      setLoadErr(`${r.status}`)
       setListings([])
       return
     }
-    const j = (await r.json()) as { listings: ListingDTO[] }
+    const j = (await r.json()) as { listings: CatalogListing[] }
     setListings(Array.isArray(j.listings) ? j.listings : [])
     setLoadErr(null)
   }, [])
 
   useEffect(() => {
-    if (!session) {
-      return
-    }
     let cancelled = false
     ;(async () => {
       try {
-        await fetchListings()
+        await load()
       } catch {
         if (!cancelled) {
           setLoadErr('Could not load listings.')
@@ -52,39 +46,27 @@ export default function ListingsPage() {
     return () => {
       cancelled = true
     }
-  }, [session, fetchListings])
-
-  if (loading) {
-    return (
-      <main className="wrap">
-        <p className="muted">Loading…</p>
-      </main>
-    )
-  }
-
-  if (!session) {
-    return <Navigate to="/login?return_to=/listings" replace />
-  }
+  }, [load])
 
   if (listings === null) {
     return (
       <main className="wrap">
-        <p className="muted">Loading listings…</p>
+        <p className="muted">Loading marketplace…</p>
       </main>
     )
   }
 
   return (
-    <main className="wrap">
-      <h1>Your listings</h1>
+    <main className="wrap browse-wrap">
+      <h1>Marketplace</h1>
       <p className="lead">
-        Signed in as <strong>{session.email}</strong>. Below are seeded FakeBay postings for this signed-in seller.
+        All active listings on this FakeBay emulator. Sign in to manage <Link to="/listings">your own postings</Link>.
       </p>
       {loadErr && <p className="err">{loadErr}</p>}
       <section className="listings-stack">
         {listings.length === 0 ? (
           <div className="panel">
-            <p className="muted empty-hint">No listings for this account yet.</p>
+            <p className="muted empty-hint">No listings yet.</p>
           </div>
         ) : (
           listings.map((l) => (
@@ -92,6 +74,8 @@ export default function ListingsPage() {
               <h2 className="listing-title">{l.title}</h2>
               <p className="listing-meta">
                 <strong>{formatMoney(l.priceCents, l.currency)}</strong>
+                <span className="muted"> · </span>
+                <span className="muted">Seller {l.sellerEmail}</span>
                 <span className="muted"> · </span>
                 <span className="muted">{new Date(l.createdAt).toLocaleString()}</span>
               </p>
@@ -101,8 +85,6 @@ export default function ListingsPage() {
         )}
       </section>
       <p className="muted">
-        <Link to="/browse">Browse all listings</Link>
-        <span className="muted"> · </span>
         <Link to="/">← Home</Link>
       </p>
     </main>

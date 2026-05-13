@@ -32,6 +32,19 @@ services:
     networks:
       - fakebay
 
+  fakebay-seed:
+    build:
+      context: ./seeder
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable
+    depends_on:
+      fakebay-migrate:
+        condition: service_completed_successfully
+    restart: "no"
+    networks:
+      - fakebay
+
   fakebay-backend:
     build:
       context: ./backend
@@ -47,7 +60,7 @@ services:
       # Comma-separated exact redirect_uri values; empty = allow any http(s) redirect (dev only).
       # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/demo/oauth/callback"
     depends_on:
-      fakebay-migrate:
+      fakebay-seed:
         condition: service_completed_successfully
     ports:
       - "14181:8081"

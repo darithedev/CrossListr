@@ -39,8 +39,8 @@ export default function LoginPage() {
     <main className="wrap">
       <h1>Sign in to FakeBay</h1>
       <p className="muted">
-        Use your FakeBay account to view listings cross-listed from CrossListr. Dev user:{' '}
-        <code>demo@fakebay.local</code> / <code>demo</code>
+        Emulator accounts (password <code>demo</code>): <code>demo@fakebay.local</code>,{' '}
+        <code>vera.seed@fakebay.local</code>, <code>kai.seed@fakebay.local</code>. Seeds run on Compose startup.
       </p>
       {err && <p className="err">{err}</p>}
       <form className="panel" onSubmit={onSubmit}>
