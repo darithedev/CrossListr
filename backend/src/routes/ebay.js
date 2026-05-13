@@ -12,4 +12,12 @@ routor.post('/auth', authMiddleware, async (req, res) => {
     }
 });
 
+routor.get('/callback', authMiddleware, async (req, res) => {
+    try {
+
+    } catch (error) {
+        
+    }
+});
+
 export default router;
