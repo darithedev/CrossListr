@@ -167,7 +167,7 @@ router.put('/:id', authMiddleware, async (req,res) => {
                 items.created_at,
                 items.updated_at
             `,
-            [title, description, category, condition, price, source, externl_id, userId, id]
+            [title, description, category, condition, price, source, external_id, userId, id]
         );
 
         if (result.rows.length === 0) {
