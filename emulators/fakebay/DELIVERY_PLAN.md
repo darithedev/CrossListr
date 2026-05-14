@@ -4,7 +4,7 @@
 
 **FakeBay** is a small, local “eBay-like” app (HTTP API + minimal browser UI) that stands in for eBay so **CrossListr** can be developed and tested against a real integration without an eBay developer account. The goal is a **narrow, stable contract** (endpoints, payloads, and auth) that CrossListr can target; FakeBay can grow feature-by-feature as CrossListr needs more behavior.
 
-FakeBay lives under **[`emulators/fakebay/`](./)** alongside **Fakify** (Shopify-shaped) and **Fakesty** (Etsy-shaped). Together they give CrossListr **three different API surfaces** so the app can learn to **pick and map fields per destination platform**. See [`../README.md`](../README.md).
+FakeBay lives under **[`emulators/fakebay/`](./)** alongside **Fakify** (Shopify-shaped) and **Faketsy** (Etsy-shaped). Together they give CrossListr **three different API surfaces** so the app can learn to **pick and map fields per destination platform**. See [`../README.md`](../README.md).
 
 **Principles:** small, reviewable changes; one focused feature per branch; each new feature branch is cut **from the previous feature branch** so work stacks cleanly and history stays easy to follow.
 
@@ -57,7 +57,7 @@ The migration image uses the official **`migrate/migrate`** image; it copies **`
   - **FakeBay migration** (one-shot; exits 0 on success)
   - **FakeBay Go API** (single service; **two container ports** for auth vs api if using Option A)
   - **FakeBay React** (dev server or static + reverse proxy, depending on scaffold)
-- For services that need a browser or host tooling (**auth listener, api listener, UI**), use **non-conflicting published host ports** vs. the existing stack **and vs. Fakify/Fakesty** when all emulators run together. **Postgres does not get a public mapping**—ad hoc SQL access, if ever needed, is via `docker exec` or a one-off admin container on the same network, not a standing host port.
+- For services that need a browser or host tooling (**auth listener, api listener, UI**), use **non-conflicting published host ports** vs. the existing stack **and vs. Fakify/Faketsy** when all emulators run together. **Postgres does not get a public mapping**—ad hoc SQL access, if ever needed, is via `docker exec` or a one-off admin container on the same network, not a standing host port.
 
 ### Cross-network communication (FakeBay ↔ CrossListr)
 
@@ -125,7 +125,7 @@ FakeBay can diverge from real eBay on purpose where documented; CrossListr shoul
 |-------|----------|
 | **Scope** | **Listings:** add, modify, delete, and read/list. **Purchase:** a dedicated API (and UI) path to **buy** a listing with minimal persisted state. |
 | **Repository** | **Single repo** for now: emulators live under **`emulators/`** in this CrossListr project. |
-| **Host ports** | **Set when we implement** each surface (auth listener, api listener, UI). Document in **`emulators/fakebay/README`** and **`.env.example`**; no fixed map in this plan. Pick ports that **do not clash** with Fakify/Fakesty or CrossListr. |
+| **Host ports** | **Set when we implement** each surface (auth listener, api listener, UI). Document in **`emulators/fakebay/README`** and **`.env.example`**; no fixed map in this plan. Pick ports that **do not clash** with Fakify/Faketsy or CrossListr. |
 | **OAuth topology** | **Option A:** one Go binary, **two listeners** (auth vs api), shared token/code store—mirrors eBay’s two-origin model without extra reverse-proxy services for MVP. |
 | **CrossListr ↔ FakeBay network** | **When implementing** the CrossListr client (phase 06): pick a **shared network** name and which services attach so the CrossListr backend/browser can reach FakeBay **auth + api** bases. FakeBay’s Postgres **stays** internal to the FakeBay stack. |
 

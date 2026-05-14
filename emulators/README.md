@@ -8,7 +8,7 @@ This folder holds **local, dev-only HTTP APIs** (and optional UIs) that mimic re
 |-----------|--------------|------|
 | [`fakebay/`](fakebay/) | eBay (sandbox-style) | OAuth + listing CRUD + minimal purchase flow |
 | [`fakify/`](fakify/) | Shopify (Admin API–style) | OAuth (per-shop token) + product CRUD + minimal order/draft flow |
-| [`fakesty/`](fakesty/) | Etsy (Open API–style) | OAuth + listing CRUD + minimal purchase/transaction flow |
+| [`faketsy/`](faketsy/) | Etsy (Open API–style) | OAuth + listing CRUD + minimal purchase/transaction flow |
 
 Each emulator has **`compose.yaml`**, **`migrations/`** (SQL + migrate image Dockerfile), **`backend/`** (Go), **`frontend/`** (React + Vite), and **`DELIVERY_PLAN.md`**.
 
@@ -33,7 +33,7 @@ docker compose -f emulators/compose.yaml up --build -d --wait
 ```bash
 docker compose -f emulators/compose.yaml --profile smoke run --rm fakebay-smoke
 docker compose -f emulators/compose.yaml --profile smoke run --rm fakify-smoke
-docker compose -f emulators/compose.yaml --profile smoke run --rm fakesty-smoke
+docker compose -f emulators/compose.yaml --profile smoke run --rm faketsy-smoke
 ```
 
 From a single emulator directory:
@@ -56,23 +56,23 @@ Postgres is **not** published to the host. Published ports:
 |----------|----------|-----|
 | FakeBay | [http://localhost:14180](http://localhost:14180) | Auth `14181`, API `14182` (`/health` on both) |
 | Fakify | [http://localhost:14280](http://localhost:14280) | [http://localhost:14282/health](http://localhost:14282/health) |
-| Fakesty | [http://localhost:14380](http://localhost:14380) | [http://localhost:14382/health](http://localhost:14382/health) |
+| Faketsy | [http://localhost:14380](http://localhost:14380) | Auth `14381`, API `14382` (`/health` on both listeners) |
 
 Startup order per stack: **Postgres (healthy) → migrate container (exit 0) → backend (until healthy) → frontend (until healthy)**. Optional smoke containers verify responses across the Docker network.
 
 ## Shared network with CrossListr
 
-Each emulator attaches **`backend`** and **`frontend`** to **`crosslistr-emulators-integration`** (a bridge with a fixed name). The main app’s [docker-compose.yml](../docker-compose.yml) uses that network as **external** so CrossListr containers can call:
+Each emulator attaches **`backend`** and **`frontend`** to **`crosslistr-emulators-integration`** (a bridge with a fixed name). The main app's [docker-compose.yml](../docker-compose.yml) uses that network as **external** so CrossListr containers can call:
 
 - `http://fakebay-backend:8081` / `:8082`, `http://fakebay-frontend:80`
 - `http://fakify-backend:8080`, `http://fakify-frontend:80`
-- `http://fakesty-backend:8080`, `http://fakesty-frontend:80`
+- `http://faketsy-backend:8081`, `http://faketsy-backend:8082`, `http://faketsy-frontend:80`
 
 **Emulator Postgres** stays on the emulator-only network (not on `integration`).
 
 **Order:** bring emulators up first so the bridge exists; then `docker compose up` for CrossListr at the repo root.
 
-**Browser** code usually still talks to **localhost** published ports (`14180`, `14280`, …) unless you proxy through CrossListr’s backend.
+**Browser** code usually still talks to **localhost** published ports (`14180`, `14280`, …) unless you proxy through CrossListr's backend.
 
 CrossListr targets **multiple destinations**. Real platforms disagree on fields, nesting (e.g. Shopify **variants** vs eBay **inventory + offer** vs Etsy **listings**), auth shapes, and URL layout. Running **three distinct emulators** lets you:
 

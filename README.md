@@ -20,10 +20,11 @@ From the **CrossListr backend** container, HTTP clients can use:
 | FakeBay UI (internal) | `http://fakebay-frontend:80` |
 | Fakify API | `http://fakify-backend:8080` |
 | Fakify UI | `http://fakify-frontend:80` |
-| Fakesty API | `http://fakesty-backend:8080` |
-| Fakesty UI | `http://fakesty-frontend:80` |
+| Faketsy auth + session | `http://faketsy-backend:8081` |
+| Faketsy API | `http://faketsy-backend:8082` |
+| Faketsy UI | `http://faketsy-frontend:80` |
 
-Env vars wired in [docker-compose.yml](docker-compose.yml): `FAKEBAY_AUTH_URL`, `FAKEBAY_API_URL`, `FAKIFY_API_URL`, `FAKESTY_API_URL`.
+Env vars wired in [docker-compose.yml](docker-compose.yml): `FAKEBAY_AUTH_URL`, `FAKEBAY_API_URL`, `FAKIFY_API_URL`, `FAKETSY_API_URL`.
 
 The **browser** on your machine uses published ports: emulators [as listed in emulators/README](emulators/README.md); CrossListr UI [http://localhost:5173](http://localhost:5173), API [http://localhost:3000](http://localhost:3000).
 

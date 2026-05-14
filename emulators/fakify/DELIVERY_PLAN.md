@@ -4,15 +4,15 @@
 
 **Fakify** is a local **Shopify Admin API–shaped** emulator so **CrossListr** can practice **product-centric** flows (title, body/HTML, variants, price, inventory quantity) and **OAuth tied to a shop**—without a Shopify Partner app in production.
 
-It shares the same mentoring pattern as **[FakeBay](../fakebay/)** and **[Fakesty](../fakesty/)**: small PRs, chained branches, `CONTRACT.md` on the real Shopify docs where we intentionally diverge.
+It shares the same mentoring pattern as **[FakeBay](../fakebay/)** and **[Faketsy](../faketsy/)**: small PRs, chained branches, `CONTRACT.md` on the real Shopify docs where we intentionally diverge.
 
-**CrossListr goal:** alongside FakeBay and Fakesty, Fakify gives a **third API shape** so CrossListr can **choose how to map canonical listing fields** when the user enables **Shopify** as a destination (e.g. variants vs flat SKU, metafields later).
+**CrossListr goal:** alongside FakeBay and Faketsy, Fakify gives a **third API shape** so CrossListr can **choose how to map canonical listing fields** when the user enables **Shopify** as a destination (e.g. variants vs flat SKU, metafields later).
 
 ## Planned product scope (MVP)
 
 - **OAuth (Shopify-flavored):** authorization redirect + token exchange yielding an **access token** scoped to a **dev shop** (emulator may use a single fixed `shop` in env for MVP).
 - **Product CRUD** mimicking a thin slice of **[Admin REST `Product`](https://shopify.dev/docs/api/admin-rest/latest/resources/product)** (create/read/update/delete; simplified JSON—no full GraphQL parity required for v1).
-- **Minimal order/checkout path:** e.g. create a **draft order** or simple “purchase” that decrements variant quantity—enough to contrast with FakeBay’s listing purchase and Fakesty’s listing sale.
+- **Minimal order/checkout path:** e.g. create a **draft order** or simple “purchase” that decrements variant quantity—enough to contrast with FakeBay's listing purchase and Faketsy's listing sale.
 - **React UI** (optional phase) for manual testing.
 
 ## Tech direction
@@ -44,7 +44,7 @@ emulators/fakify/
 
 ## Runtime and networking
 
-- **`emulators/fakify/compose.yaml`**: Postgres → migrate → backend → frontend; **unique host ports** vs CrossListr, FakeBay, and Fakesty.
+- **`emulators/fakify/compose.yaml`**: Postgres → migrate → backend → frontend; **unique host ports** vs CrossListr, FakeBay, and Faketsy.
 - Docker network name e.g. **`fakify`**; attach **`integration`** (or equivalent) when CrossListr must call Fakify by service name.
 - CrossListr **never** connects to Fakify Postgres—only HTTP.
 
@@ -62,7 +62,7 @@ Chain branches from the previous feature branch (same discipline as FakeBay). Su
 | **03** | Products API | CRUD under Admin-style paths; simplified Product/Variant JSON; align field names to Shopify samples where practical. |
 | **04** | Order stub | Minimal draft order or purchase flow; new migrations if needed. |
 | **05** | UI | Browse/edit products + exercise OAuth + order path. |
-| **06** | CrossListr stub | Env-driven **Fakify base URL** + token; test multi-platform switch alongside FakeBay/Fakesty. |
+| **06** | CrossListr stub | Env-driven **Fakify base URL** + token; test multi-platform switch alongside FakeBay/Faketsy. |
 | **07+** | Parity | Webhooks, inventory items, GraphQL-shaped endpoints—only as needed. |
 
 ## API contract

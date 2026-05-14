@@ -3,8 +3,12 @@ info:
   title: FakeBay emulator — API listener
   description: |
     Token exchange and **Bearer**-protected seller APIs for the FakeBay API process (`FAKEBAY_API_ADDR`, default `:8082`).
-    Complete the browser **authorization code** flow on the **auth** listener (`:8081`), then exchange `code` here with **HTTP Basic** (`client_id` / `client_secret`).
-  version: '1.0'
+    Complete the browser **authorization code** flow on the **auth** listener (`:8081`; `GET /oauth2/authorize` + consent), then exchange `code` here.
+
+    **This process also serves:** **`GET /openapi.yaml`** (this spec) and **`GET /swagger`** (Swagger UI). Session JSON and public catalog (`/api/v1/session/*`, `/api/v1/catalog/*`) live on the **auth** port, not documented here.
+
+    Token requests use **`application/x-www-form-urlencoded`** (URL-encoded body) and require **HTTP Basic** with `FAKEBAY_CLIENT_ID` / `FAKEBAY_CLIENT_SECRET` on every `/identity/v1/oauth2/token` call.
+  version: '1.1'
   license:
     name: MIT
 
@@ -16,6 +20,8 @@ servers:
     description: Integration network (in-container)
 
 tags:
+  - name: Discovery
+    description: OpenAPI document and Swagger UI (this binary).
   - name: Health
   - name: OAuth2
     description: Client credentials via Basic auth; user tokens are Bearer.
@@ -23,6 +29,32 @@ tags:
     description: CRUD for the seller identified by the access token (`sub` = user email).
 
 paths:
+  /openapi.yaml:
+    get:
+      tags: [Discovery]
+      summary: Embedded OpenAPI 3 specification
+      operationId: getOpenAPISpec
+      responses:
+        '200':
+          description: YAML document
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  /swagger:
+    get:
+      tags: [Discovery]
+      summary: Swagger UI for this listener
+      operationId: getSwaggerUI
+      responses:
+        '200':
+          description: HTML page loading Swagger UI
+          content:
+            text/html:
+              schema:
+                type: string
+
   /health:
     get:
       tags: [Health]
@@ -98,6 +130,8 @@ paths:
     get:
       tags: [Seller listings]
       summary: List my listings
+      description: |
+        Newest updated first. Optional `limit` query (default **50**, max **100**; invalid values fall back to default).
       operationId: listSellerListings
       security:
         - bearerAuth: []
@@ -187,6 +221,7 @@ paths:
               $ref: '#/components/schemas/PatchListingRequest'
       responses:
         '200':
+          description: Updated listing
           content:
             application/json:
               schema:
