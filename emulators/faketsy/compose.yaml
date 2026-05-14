@@ -1,51 +1,51 @@
 services:
-  fakesty-postgres:
+  faketsy-postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: fakesty
-      POSTGRES_PASSWORD: fakesty
-      POSTGRES_DB: fakesty
+      POSTGRES_USER: faketsy
+      POSTGRES_PASSWORD: faketsy
+      POSTGRES_DB: faketsy
     volumes:
-      - fakesty_pgdata:/var/lib/postgresql/data
+      - faketsy_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fakesty -d fakesty"]
+      test: ["CMD-SHELL", "pg_isready -U faketsy -d faketsy"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - fakesty
+      - faketsy
 
-  fakesty-migrate:
+  faketsy-migrate:
     build:
       context: ./migrations
       dockerfile: Dockerfile
     command:
       [
         "-database",
-        "postgres://fakesty:fakesty@fakesty-postgres:5432/fakesty?sslmode=disable",
+        "postgres://faketsy:faketsy@faketsy-postgres:5432/faketsy?sslmode=disable",
         "up",
       ]
     depends_on:
-      fakesty-postgres:
+      faketsy-postgres:
         condition: service_healthy
     restart: "no"
     networks:
-      - fakesty
+      - faketsy
 
-  fakesty-backend:
+  faketsy-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      FAKESTY_HTTP_ADDR: ":8080"
-      DATABASE_URL: postgres://fakesty:fakesty@fakesty-postgres:5432/fakesty?sslmode=disable
-      FAKESTY_UPLOAD_DIR: /tmp/fakesty-upload
-      FAKESTY_PUBLIC_ORIGIN: "http://127.0.0.1:14382"
+      FAKETSY_HTTP_ADDR: ":8080"
+      DATABASE_URL: postgres://faketsy:faketsy@faketsy-postgres:5432/faketsy?sslmode=disable
+      FAKETSY_UPLOAD_DIR: /tmp/faketsy-upload
+      FAKETSY_PUBLIC_ORIGIN: "http://127.0.0.1:14382"
       # Optional dev auth (Etsy uses x-api-key + Bearer on real API):
-      # FAKESTY_API_KEY: dev-keystring
-      # FAKESTY_ACCESS_TOKEN: dev-bearer-token
+      # FAKETSY_API_KEY: dev-keystring
+      # FAKETSY_ACCESS_TOKEN: dev-bearer-token
     depends_on:
-      fakesty-migrate:
+      faketsy-migrate:
         condition: service_completed_successfully
     ports:
       - "14382:8080"
@@ -56,17 +56,17 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      fakesty:
+      faketsy:
       integration:
         aliases:
-          - fakesty-backend
+          - faketsy-backend
 
-  fakesty-frontend:
+  faketsy-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     depends_on:
-      fakesty-backend:
+      faketsy-backend:
         condition: service_healthy
     ports:
       - "14380:80"
@@ -78,35 +78,35 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      fakesty:
+      faketsy:
       integration:
         aliases:
-          - fakesty-frontend
+          - faketsy-frontend
 
-  fakesty-smoke:
+  faketsy-smoke:
     profiles: [smoke]
     image: curlimages/curl:8.11.1
     depends_on:
-      fakesty-backend:
+      faketsy-backend:
         condition: service_healthy
-      fakesty-frontend:
+      faketsy-frontend:
         condition: service_healthy
     networks:
-      - fakesty
+      - faketsy
     command:
       [
         "sh",
         "-c",
-        "set -e; curl -sf http://fakesty-backend:8080/health | grep -q fakesty; curl -sf http://fakesty-frontend:80/ | grep -q Fakesty; echo fakesty smoke OK",
+        "set -e; curl -sf http://faketsy-backend:8080/health | grep -q faketsy; curl -sf http://faketsy-frontend:80/ | grep -q Faketsy; echo faketsy smoke OK",
       ]
     restart: "no"
 
 networks:
-  fakesty:
+  faketsy:
     driver: bridge
   integration:
     name: crosslistr-emulators-integration
     driver: bridge
 
 volumes:
-  fakesty_pgdata:
+  faketsy_pgdata:

@@ -11,4 +11,4 @@ name: crosslistr-emulators
 include:
   - path: ./fakebay/compose.yaml
   - path: ./fakify/compose.yaml
-  - path: ./fakesty/compose.yaml
+  - path: ./faketsy/compose.yaml

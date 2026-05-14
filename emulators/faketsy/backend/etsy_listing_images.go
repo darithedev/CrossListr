@@ -36,8 +36,8 @@ func writeEtsyJSON(w http.ResponseWriter, code int, body any) {
 	_ = json.NewEncoder(w).Encode(body)
 }
 
-func fakestyAuthOK(w http.ResponseWriter, r *http.Request) bool {
-	wantKey := strings.TrimSpace(os.Getenv("FAKESTY_API_KEY"))
+func faketsyAuthOK(w http.ResponseWriter, r *http.Request) bool {
+	wantKey := strings.TrimSpace(os.Getenv("FAKETSY_API_KEY"))
 	if wantKey != "" {
 		got := strings.TrimSpace(r.Header.Get("X-Api-Key"))
 		if got != wantKey {
@@ -46,7 +46,7 @@ func fakestyAuthOK(w http.ResponseWriter, r *http.Request) bool {
 		}
 	}
 
-	wantTok := strings.TrimSpace(os.Getenv("FAKESTY_ACCESS_TOKEN"))
+	wantTok := strings.TrimSpace(os.Getenv("FAKETSY_ACCESS_TOKEN"))
 	if wantTok != "" {
 		tok, ok := parseBearerAuth(r.Header.Get("Authorization"))
 		if !ok || tok != wantTok {
@@ -57,8 +57,8 @@ func fakestyAuthOK(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
-func fakestyPublicOrigin(r *http.Request) string {
-	if o := strings.TrimSuffix(env("FAKESTY_PUBLIC_ORIGIN", ""), "/"); o != "" {
+func faketsyPublicOrigin(r *http.Request) string {
+	if o := strings.TrimSuffix(env("FAKETSY_PUBLIC_ORIGIN", ""), "/"); o != "" {
 		return o
 	}
 	proto := "http"
@@ -86,7 +86,7 @@ func randomHex(n int) (string, error) {
 	return string(out), nil
 }
 
-func ensureFakestyUploadRoot(root string) error {
+func ensureFaketsyUploadRoot(root string) error {
 	return os.MkdirAll(filepath.Join(root, "listing-images"), 0o775)
 }
 
@@ -106,7 +106,7 @@ func mimeFromListingName(name string) string {
 }
 
 func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadRoot string) {
-	if !fakestyAuthOK(w, r) {
+	if !faketsyAuthOK(w, r) {
 		return
 	}
 	if r.Method != http.MethodPost {
@@ -122,7 +122,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 
 	var stub int
 	err := db.QueryRow(
-		`SELECT 1 FROM fakesty_listings WHERE listing_id=$1 AND shop_id=$2`,
+		`SELECT 1 FROM faketsy_listings WHERE listing_id=$1 AND shop_id=$2`,
 		listingID, shopID,
 	).Scan(&stub)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -163,7 +163,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		}
 	} else {
 		err := db.QueryRow(
-			`SELECT COALESCE(MAX(rank), 0) + 1 FROM fakesty_listing_images WHERE listing_id = $1`,
+			`SELECT COALESCE(MAX(rank), 0) + 1 FROM faketsy_listing_images WHERE listing_id = $1`,
 			listingID,
 		).Scan(&rank)
 		if err != nil {
@@ -205,7 +205,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 
 	var imgID int64
 	err = tx.QueryRow(
-		`INSERT INTO fakesty_listing_images (
+		`INSERT INTO faketsy_listing_images (
 			listing_id, shop_id, rank, mime_type, bytes_size, original_filename, relative_path)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING listing_image_id`,
 		listingID, shopID, rank, mime, int64(len(data)), fileName, pendingRel,
@@ -229,7 +229,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		writeEtsyJSON(w, http.StatusInternalServerError, map[string]string{"error": "cannot persist image bytes"})
 		return
 	}
-	if _, err := tx.Exec(`UPDATE fakesty_listing_images SET relative_path=$1 WHERE listing_image_id=$2`, finalRel, imgID); err != nil {
+	if _, err := tx.Exec(`UPDATE faketsy_listing_images SET relative_path=$1 WHERE listing_image_id=$2`, finalRel, imgID); err != nil {
 		_ = os.Remove(diskPath)
 		writeEtsyJSON(w, http.StatusInternalServerError, map[string]string{"error": "finalize failed"})
 		return
@@ -240,7 +240,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		return
 	}
 
-	base := fakestyPublicOrigin(r)
+	base := faketsyPublicOrigin(r)
 	full := fmt.Sprintf("%s/v3/display/listing-images/%d/fullxfull", base, imgID)
 
 	writeEtsyJSON(w, http.StatusOK, map[string]any{
@@ -248,7 +248,7 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		"listing_image_id":   imgID,
 		"rank":               rank,
 		"url_fullxfull":      full,
-		"emulator_extension": "fakesty dev response shape; see Etsy listing image docs for production fields",
+		"emulator_extension": "faketsy dev response shape; see Etsy listing image docs for production fields",
 	})
 }
 
@@ -273,7 +273,7 @@ func handleEtsyListingImageServe(w http.ResponseWriter, r *http.Request, db *sql
 	}
 	var mime, rel string
 	err = db.QueryRow(
-		`SELECT mime_type, relative_path FROM fakesty_listing_images WHERE listing_image_id=$1`,
+		`SELECT mime_type, relative_path FROM faketsy_listing_images WHERE listing_image_id=$1`,
 		imgID,
 	).Scan(&mime, &rel)
 	if errors.Is(err, sql.ErrNoRows) {

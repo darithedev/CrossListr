@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS emulator_meta (
     slug text NOT NULL UNIQUE
 );
 
-INSERT INTO emulator_meta (slug) VALUES ('fakesty')
+INSERT INTO emulator_meta (slug) VALUES ('faketsy')
     ON CONFLICT (slug) DO NOTHING;

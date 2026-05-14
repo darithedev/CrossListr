@@ -1,4 +1,4 @@
-module fakesty
+module faketsy
 
 go 1.22
 

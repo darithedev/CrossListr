@@ -9,7 +9,7 @@
 #   http://fakebay-backend:8081  (auth listener)
 #   http://fakebay-backend:8082  (API / OAuth token path later)
 #   http://fakify-backend:8080
-#   http://fakesty-backend:8080
+#   http://faketsy-backend:8080
 #   UIs: http://fakebay-frontend:80  etc.
 #
 # Browser on your machine still uses published ports:
@@ -63,7 +63,7 @@ services:
       FAKEBAY_AUTH_URL: http://fakebay-backend:8081
       FAKEBAY_API_URL: http://fakebay-backend:8082
       FAKIFY_API_URL: http://fakify-backend:8080
-      FAKESTY_API_URL: http://fakesty-backend:8080
+      FAKETSY_API_URL: http://faketsy-backend:8080
     depends_on:
       migrations:
         condition: service_completed_successfully
