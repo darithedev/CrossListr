@@ -233,7 +233,7 @@ const ItemForm = () => {
 
             <Form.Group>
                 <Button type="button" variant="outline-success" onClick={() => saveItem(itemData)}>
-                    Save Draft
+                    Save draft
                 </Button>
                 <Button type="submit" variant="outline-success">
                     Submit
