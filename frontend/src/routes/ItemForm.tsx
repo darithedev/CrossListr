@@ -39,7 +39,7 @@ type CloudinaryPayload = {
     [additional_response: string]: unknown;
 };
 
-type CloudinaryResult = {
+type CloudinaryInfo = {
     event: string;
     info: CloudinaryPayload;
 };
