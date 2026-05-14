@@ -150,6 +150,10 @@ const ItemForm = () => {
         setItemData((prev) => ({ ...prev, price }));
     };
 
+    const handleRemoveImage = (index: number) => {
+        setItemData((prev) => ({ ...prev, item_images: prev.item_images.filter((_, i) => i !== index)}))
+    }
+
     const clearForm = () => {
         setItemData({
             id: "",
@@ -180,6 +184,25 @@ const ItemForm = () => {
     return (
         <Form className="form-item" onSubmit={handleSubmit}>
             <h2>{!isEditing ? 'New Item' : 'Edit Item'}</h2>
+
+            <Form.Group controlId="images">
+                <div className="upload-box">
+                    {itemData.item_images.map((url, index) => (
+                        <div key={`${url}-${index}`}>
+                            <img src={url} alt=""/>
+                            <button onClick={() => handleRemoveImage(index)}>x</button>
+                        </div>
+                    ))}
+                </div>
+                <p>Photos: {itemData.item_images.length}/12</p>
+                <Button
+                    type="button"
+                    variant="outline-primary"
+                    onClick={() => cloudinaryRef.current?.open()}
+                >
+                    Add photos
+                </Button>
+            </Form.Group>
 
             <Form.Group controlId="title">
                 <Form.Label>Title:</Form.Label>
