@@ -37,7 +37,12 @@ type CloudinaryPayload = {
     secure_url: string;
     url: string;
     [additional_response: string]: unknown;
-}
+};
+
+type CloudinaryResult = {
+    event: string;
+    info: CloudinaryPayload;
+};
 
 const ItemForm = () => {
     const { id } = useParams();
