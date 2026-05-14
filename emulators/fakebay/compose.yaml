@@ -1,0 +1,134 @@
+services:
+  fakebay-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fakebay
+      POSTGRES_PASSWORD: fakebay
+      POSTGRES_DB: fakebay
+    volumes:
+      - fakebay_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fakebay -d fakebay"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fakebay
+
+  fakebay-migrate:
+    build:
+      context: ./migrations
+      dockerfile: Dockerfile
+    command:
+      [
+        "-database",
+        "postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable",
+        "up",
+      ]
+    depends_on:
+      fakebay-postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - fakebay
+
+  fakebay-seed:
+    build:
+      context: ./seeder
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable
+    depends_on:
+      fakebay-migrate:
+        condition: service_completed_successfully
+    restart: "no"
+    networks:
+      - fakebay
+
+  fakebay-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable
+      FAKEBAY_AUTH_ADDR: ":8081"
+      FAKEBAY_API_ADDR: ":8082"
+      FAKEBAY_CLIENT_ID: dev-fakebay-client
+      FAKEBAY_CLIENT_SECRET: dev-fakebay-secret
+      FAKEBAY_CLIENT_DISPLAY_NAME: CrossListr
+      FAKEBAY_UI_ORIGINS: "http://localhost:14180,http://127.0.0.1:14180"
+      # Seconds until refresh tokens expire after code exchange (default in code if unset is 7776000 = 90d).
+      # FAKEBAY_REFRESH_TOKEN_TTL_SECONDS: "3600"
+      # Comma-separated exact redirect_uri values; empty = allow any http(s) redirect (dev only).
+      # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/demo/oauth/callback"
+    depends_on:
+      fakebay-seed:
+        condition: service_completed_successfully
+    ports:
+      - "14181:8081"
+      - "14182:8082"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8081/health >/dev/null && wget -qO- http://127.0.0.1:8082/health >/dev/null",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      fakebay:
+      integration:
+        aliases:
+          - fakebay-backend
+
+  fakebay-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      fakebay-backend:
+        condition: service_healthy
+    ports:
+      - "14180:80"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      fakebay:
+      integration:
+        aliases:
+          - fakebay-frontend
+
+  fakebay-smoke:
+    profiles: [smoke]
+    image: curlimages/curl:8.11.1
+    depends_on:
+      fakebay-backend:
+        condition: service_healthy
+      fakebay-frontend:
+        condition: service_healthy
+    networks:
+      - fakebay
+    command:
+      [
+        "sh",
+        "-c",
+        "set -e; curl -sf http://fakebay-backend:8081/health | grep -q fakebay; curl -sf http://fakebay-backend:8082/health | grep -q fakebay; curl -sf http://fakebay-frontend:80/ | grep -q FakeBay; echo fakebay smoke OK",
+      ]
+    restart: "no"
+
+networks:
+  fakebay:
+    driver: bridge
+  integration:
+    name: crosslistr-emulators-integration
+    driver: bridge
+
+volumes:
+  fakebay_pgdata:
