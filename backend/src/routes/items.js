@@ -196,15 +196,30 @@ router.delete('/:id', authMiddleware, async (req, res) => {
         }
 
         const result = await pool.query(
-            `DELETE FROM items WHERE user_id = $1 AND id = $2 RETURNING items.id, items.title`,
+            `DELETE FROM items 
+            WHERE user_id = $1 
+                AND id = $2
+                AND status = 'draft'
+            RETURNING items.id, items.title`,
             [userId, id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Item was not found.' });
+        if (result.rows.length > 0) {
+            return res.status(200).json(result.rows[0]);
         };
 
-        return res.status(200).json(result.rows[0]);
+        const existingResult = await pool.query(
+            `SELECT id, status FROM items WHERE user_id = $1 AND id = $2`,
+            [userId, id]
+        );
+
+        if (existingResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Item was not found.' });
+        }
+
+        return res.status(409).json({
+            error: 'Items with listings cannot be deleted.'
+        });
     } catch (error) {
         console.error('DELETE /items/:id failed:', error);
         return res.status(500).json({
