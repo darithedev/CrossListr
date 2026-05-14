@@ -61,6 +61,8 @@ const ItemForm = () => {
 
     const cloudinaryRef = useRef<CloudinaryWidget | null>(null);
 
+    const imageCountRef = useRef<number>(0);
+
     useEffect(() => {
         const cloudinary = (window as any).cloudinary;
 
@@ -172,8 +174,43 @@ const ItemForm = () => {
         }
     }, [isEditing, itemData]);
 
-    const saveItem = (item: ItemData) => {
-        // Add axios for POST /item & PUT /item/:id here
+    const saveItem = async (item: ItemData): Promise<void> => {
+        const payload = {
+            title: item.title,
+            description: item.description,
+            category: item.category,
+            condition: item.condition,
+            price: item.price,
+            source: 'manual',
+            external_id: null,
+        }
+
+        let itemId: string;
+        if (isEditing && id) {
+            const { data } = await axios.put(`${API_URL}/v1/items/${id}`, payload, {
+                headers: authHeaders(),
+            });
+            itemId = String(data.id ?? id);
+        } else {
+            const { data } = await axios.post(`${API_URL}/v1/items`, payload, {
+                headers: authHeaders(),
+            });
+            itemId = String(data.id ?? id);
+        };
+
+        setItemData((prev) => ({ ...prev, id: itemId }));
+
+        const images = itemData.item_images.slice(imageCountRef.current)
+        for (let i = 0; i < images.length; i++) {
+            await axios.post(
+                `${API_URL}/v1/items/${itemId}/images`,
+                {
+                    image_url: images[i],
+                    index_number: imageCountRef.current + i,
+                },
+                { headers: authHeaders() }
+            )
+        }
     };
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
