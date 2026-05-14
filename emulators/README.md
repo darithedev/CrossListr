@@ -56,7 +56,7 @@ Postgres is **not** published to the host. Published ports:
 |----------|----------|-----|
 | FakeBay | [http://localhost:14180](http://localhost:14180) | Auth `14181`, API `14182` (`/health` on both) |
 | Fakify | [http://localhost:14280](http://localhost:14280) | [http://localhost:14282/health](http://localhost:14282/health) |
-| Faketsy | [http://localhost:14380](http://localhost:14380) | [http://localhost:14382/health](http://localhost:14382/health) |
+| Faketsy | [http://localhost:14380](http://localhost:14380) | Auth `14381`, API `14382` (`/health` on both listeners) |
 
 Startup order per stack: **Postgres (healthy) → migrate container (exit 0) → backend (until healthy) → frontend (until healthy)**. Optional smoke containers verify responses across the Docker network.
 
@@ -66,7 +66,7 @@ Each emulator attaches **`backend`** and **`frontend`** to **`crosslistr-emulato
 
 - `http://fakebay-backend:8081` / `:8082`, `http://fakebay-frontend:80`
 - `http://fakify-backend:8080`, `http://fakify-frontend:80`
-- `http://faketsy-backend:8080`, `http://faketsy-frontend:80`
+- `http://faketsy-backend:8081`, `http://faketsy-backend:8082`, `http://faketsy-frontend:80`
 
 **Emulator Postgres** stays on the emulator-only network (not on `integration`).
 

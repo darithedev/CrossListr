@@ -10,6 +10,6 @@ RUN apk add --no-cache ca-certificates wget
 RUN mkdir -p /tmp/faketsy-upload && chmod 1777 /tmp/faketsy-upload
 COPY --from=build /faketsy-api /usr/local/bin/faketsy-api
 USER nobody
-EXPOSE 8080
+EXPOSE 8081 8082
 ENV FAKETSY_UPLOAD_DIR=/tmp/faketsy-upload
 ENTRYPOINT ["/usr/local/bin/faketsy-api"]

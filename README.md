@@ -20,7 +20,8 @@ From the **CrossListr backend** container, HTTP clients can use:
 | FakeBay UI (internal) | `http://fakebay-frontend:80` |
 | Fakify API | `http://fakify-backend:8080` |
 | Fakify UI | `http://fakify-frontend:80` |
-| Faketsy API | `http://faketsy-backend:8080` |
+| Faketsy auth + session | `http://faketsy-backend:8081` |
+| Faketsy API | `http://faketsy-backend:8082` |
 | Faketsy UI | `http://faketsy-frontend:80` |
 
 Env vars wired in [docker-compose.yml](docker-compose.yml): `FAKEBAY_AUTH_URL`, `FAKEBAY_API_URL`, `FAKIFY_API_URL`, `FAKETSY_API_URL`.
