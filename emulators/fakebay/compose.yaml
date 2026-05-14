@@ -57,6 +57,8 @@ services:
       FAKEBAY_CLIENT_SECRET: dev-fakebay-secret
       FAKEBAY_CLIENT_DISPLAY_NAME: CrossListr
       FAKEBAY_UI_ORIGINS: "http://localhost:14180,http://127.0.0.1:14180"
+      # Seconds until refresh tokens expire after code exchange (default in code if unset is 7776000 = 90d).
+      # FAKEBAY_REFRESH_TOKEN_TTL_SECONDS: "3600"
       # Comma-separated exact redirect_uri values; empty = allow any http(s) redirect (dev only).
       # FAKEBAY_ALLOWED_REDIRECT_URIS: "http://localhost:14180/demo/oauth/callback"
     depends_on:

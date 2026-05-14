@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+func refreshExpiresInSeconds(expiresAt time.Time) int {
+	sec := int(expiresAt.Sub(time.Now()).Seconds())
+	if sec < 0 {
+		return 0
+	}
+	return sec
+}
+
 func redirectOAuthError(w http.ResponseWriter, r *http.Request, redirectURI, state, errCode, description string) {
 	to, err := url.Parse(redirectURI)
 	if err != nil {
@@ -83,12 +91,14 @@ func handleTokenAuthCode(w http.ResponseWriter, r *http.Request, cfg oauthConfig
 	}
 
 	accessTTL := time.Duration(cfg.AccessTokenTTLSeconds) * time.Second
-	at, rt, _ := store.issueAccessAndRefresh(clientID, sub, accessTTL)
+	refreshTTL := time.Duration(cfg.RefreshTokenTTLSeconds) * time.Second
+	at, rt, _, refreshExp := store.issueAccessAndRefresh(clientID, sub, accessTTL, refreshTTL)
 	writeJSON(w, http.StatusOK, map[string]any{
-		"access_token":  at,
-		"expires_in":    cfg.AccessTokenTTLSeconds,
-		"refresh_token": rt,
-		"token_type":    "User Access Token",
+		"access_token":               at,
+		"expires_in":                 cfg.AccessTokenTTLSeconds,
+		"refresh_token":            rt,
+		"refresh_token_expires_in":   refreshExpiresInSeconds(refreshExp),
+		"token_type":                 "User Access Token",
 	})
 }
 
@@ -103,19 +113,20 @@ func handleTokenRefresh(w http.ResponseWriter, r *http.Request, cfg oauthConfig,
 	}
 
 	accessTTL := time.Duration(cfg.AccessTokenTTLSeconds) * time.Second
-	at, _, ok := store.rotateFromRefresh(clientID, rt, accessTTL)
+	at, _, refreshExp, ok := store.rotateFromRefresh(clientID, rt, accessTTL)
 	if !ok {
 		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error":             "invalid_grant",
-			"error_description": "refresh_token is invalid or revoked",
+			"error_description": "refresh_token is expired, invalid, or revoked",
 		})
 		return
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"access_token": at,
-		"expires_in":   cfg.AccessTokenTTLSeconds,
-		"token_type":   "User Access Token",
+		"access_token":             at,
+		"expires_in":               cfg.AccessTokenTTLSeconds,
+		"refresh_token_expires_in": refreshExpiresInSeconds(refreshExp),
+		"token_type":               "User Access Token",
 	})
 }
 

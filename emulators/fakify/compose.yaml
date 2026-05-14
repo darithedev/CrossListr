@@ -38,6 +38,12 @@ services:
       dockerfile: Dockerfile
     environment:
       FAKIFY_HTTP_ADDR: ":8080"
+      DATABASE_URL: postgres://fakify:fakify@fakify-postgres:5432/fakify?sslmode=disable
+      FAKIFY_UPLOAD_DIR: /tmp/fakify-upload
+      # Stable URLs in GraphQL / CDN responses when clients are on the host (not required in pure container-to-container calls).
+      FAKIFY_PUBLIC_ORIGIN: "http://127.0.0.1:14282"
+      # Optional: when set, all Admin GraphQL + staged PUT require this X-Shopify-Access-Token value.
+      # FAKIFY_SHOPIFY_ACCESS_TOKEN: "dev-shopify-token"
     depends_on:
       fakify-migrate:
         condition: service_completed_successfully

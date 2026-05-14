@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 func health(w http.ResponseWriter, _ *http.Request) {
@@ -27,7 +28,8 @@ func main() {
 	}
 
 	cfg := loadOAuthConfig()
-	store := newOAuthStore()
+	store := newOAuthStore(db)
+	go store.runOAuthPurger(time.Minute)
 	sm := newSessionManager()
 	uiOrigins := loadUiOrigins()
 
