@@ -20,4 +20,12 @@ routor.get('/callback', authMiddleware, async (req, res) => {
     }
 });
 
+routor.get('/listings', authMiddleware, async (req, res) => {
+    try {
+
+    } catch (error) {
+        
+    }
+});
+
 export default router;
