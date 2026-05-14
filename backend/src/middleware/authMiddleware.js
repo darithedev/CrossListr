@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const authMiddleware = (req, res, next) => {
     if(!JWT_SECRET) {
-        return res.status(500),json({ error: "JWT secret is required. Please configure."})
+        return res.status(500).json({ error: "JWT secret is required. Please configure."})
     }
     try {
         const authHeader = req.headers.authorization;

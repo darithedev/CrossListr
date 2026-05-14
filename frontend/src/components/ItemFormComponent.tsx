@@ -1,0 +1,146 @@
+import { useState, useEffect } from 'react'
+import { Form, Button } from 'react-bootstrap'
+
+type ItemData = {
+    id: string;
+    item_images: string[];
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+};
+
+type EditingProps = {
+    isEditing: boolean;
+    itemData: ItemData;
+    onSave: (item: ItemData) => void;
+};
+
+const ItemFormComponent = ({ isEditing, itemData, onSave }: EditingProps) => {
+
+    const [item, setItem] = useState<ItemData>(itemData);
+
+    const handleItemImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const images = event.target.files;
+
+        if (!images) return;
+
+        // Complete logic for storing images
+    };
+
+    const handleTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const title = event.target.value;
+        setItem((prev) => ({ ...prev, title }));
+    };
+
+    const handleDescription = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const description = event.target.value;
+        setItem((prev) => ({ ...prev, description }));
+    };
+
+    const handleCategory = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const category = event.target.value;
+        setItem((prev) => ({ ...prev, category }));
+    };
+
+    const handleCondition = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const condition = event.target.value;
+        setItem((prev) => ({ ...prev, condition }));
+    };
+
+    const handlePrice = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const price = Number(event.target.value);
+        setItem((prev) => ({ ...prev, price }));
+    };
+
+    const clearForm = () => {
+        setItem({
+            id: "",
+            item_images: [],
+            title: "",
+            description: "",
+            category: "",
+            condition: "",
+            price: 0
+        });
+    };
+
+    useEffect(() => {
+        if (isEditing && itemData) {
+            setItem(itemData);
+        }
+    }, [isEditing, itemData]);
+
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        onSave(item);
+    };
+
+    return (
+        <Form 
+            className="form-item"
+            onSubmit={handleSubmit}
+        >
+            <h2>{!isEditing ? "New Item" : "Edit Item"}</h2>
+            <Form.Group controlId="title">
+                <Form.Label>Title: </Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Vintage Jacket"
+                    required
+                    value={item.title}
+                    onChange={handleTitle}
+                />
+            </Form.Group>
+            <Form.Group controlId="description">
+                <Form.Label>Description: </Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Describe this item"
+                    required
+                    value={item.description}
+                    onChange={handleDescription}
+                />
+            </Form.Group>
+            <Form.Group controlId="category">
+                <Form.Label>Category: </Form.Label>
+                <Form.Control
+                    type="text"
+                    value={item.category}
+                    onChange={handleCategory}
+                />
+            </Form.Group>
+            <Form.Group controlId="condition">
+                <Form.Label>Item COndition: </Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Used"
+                    value={item.condition}
+                    onChange={handleCondition}
+                />
+            </Form.Group>
+            <Form.Group controlId="price">
+                <Form.Label>Price: </Form.Label>
+                <Form.Control
+                    type="number"
+                    value={item.price}
+                    onChange={handlePrice}
+                />
+            </Form.Group>
+            <Form.Group>
+                <Button type="submit" variant="outline-success">
+                    Submit
+                </Button>
+                <Button type="button" variant="outline-warning" onClick={clearForm}>
+                    Reset
+                </Button>
+                {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
+                Back
+            </Button>*/}
+            </Form.Group>
+        </Form>
+    )
+}
+
+export default ItemFormComponent; 
