@@ -79,6 +79,8 @@ func main() {
 	})
 
 	api := http.NewServeMux()
+	api.HandleFunc("GET /openapi.yaml", handleOpenAPISpec)
+	api.HandleFunc("GET /swagger", handleSwaggerUI)
 	api.HandleFunc("GET /health", health)
 	api.HandleFunc("POST /v3/public/oauth/token", func(w http.ResponseWriter, r *http.Request) {
 		handlePublicOAuthToken(w, r, cfg, store)

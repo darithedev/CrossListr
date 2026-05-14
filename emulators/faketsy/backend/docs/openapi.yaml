@@ -1,0 +1,407 @@
+openapi: 3.0.3
+info:
+  title: Faketsy emulator — API listener
+  description: |
+    Etsy Open API–shaped **OAuth token**, **identity**, and **listing image** routes on `FAKETSY_API_ADDR` (default `:8082`).
+
+    **Authorize + PKCE:** start on the **auth** listener (`:8081`): `GET /oauth/connect`. Session/catalog JSON also live there.
+
+    **This process serves:** **`GET /openapi.yaml`** and **`GET /swagger`** (Swagger UI; CDN assets loaded in browser).
+
+    **Token:** accepts **`application/json`** or **`application/x-www-form-urlencoded`**. Without `FAKETSY_CLIENT_SECRET`, only `client_id` + PKCE `code_verifier` are needed for authorization code exchange. With a secret configured, send HTTP Basic (`client_id`:`client_secret`) or include `client_secret` in the body.
+  version: '1.0'
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:14382
+    description: Published host API port (Compose default)
+  - url: http://127.0.0.1:14382
+  - url: http://faketsy-backend:8082
+    description: Docker integration network
+
+tags:
+  - name: Discovery
+  - name: Health
+  - name: OAuth
+  - name: Identity
+  - name: Listing images
+
+paths:
+  /openapi.yaml:
+    get:
+      tags: [Discovery]
+      summary: Embedded OpenAPI 3 specification
+      operationId: getOpenAPISpec
+      responses:
+        '200':
+          description: YAML document
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  /swagger:
+    get:
+      tags: [Discovery]
+      summary: Swagger UI for this listener
+      operationId: getSwaggerUI
+      responses:
+        '200':
+          description: HTML page loading Swagger UI
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness
+      operationId: getHealth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /v3/public/oauth/token:
+    post:
+      tags: [OAuth]
+      summary: Obtain access token (PKCE authorization code or refresh)
+      operationId: postOAuthToken
+      description: >
+        Emulator-only rules: `grant_type=authorization_code` requires `code_verifier`; when `FAKETSY_CLIENT_SECRET` is unset,
+        public-client style (no Basic) works. Prefer JSON for browser demos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/OAuthTokenAuthCodeJSON'
+                - $ref: '#/components/schemas/OAuthTokenRefreshJSON'
+          application/x-www-form-urlencoded:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/OAuthTokenAuthCodeForm'
+                - $ref: '#/components/schemas/OAuthTokenRefreshForm'
+      responses:
+        '200':
+          description: Token issued (Bearer-style)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenResponse'
+        '400':
+          description: Invalid grant / validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthErrorJson'
+        '401':
+          description: Invalid client (when secret configured)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthErrorJson'
+        '405':
+          description: Method not allowed
+
+  /v3/application/users/me:
+    get:
+      tags: [Identity]
+      summary: Resolve Bearer access token (emulator convenience)
+      operationId: getUsersMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Caller identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMeResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthErrorJson'
+
+  /v3/application/shops/{shop_id}/listings/{listing_id}/images:
+    post:
+      tags: [Listing images]
+      summary: Upload listing image (multipart — Etsy-pattern path)
+      operationId: postListingImages
+      description: >
+        Optional security: when `FAKETSY_API_KEY` or `FAKETSY_ACCESS_TOKEN` is set on the emulator, send matching headers;
+        otherwise no auth headers are required.
+      parameters:
+        - $ref: '#/components/parameters/ShopId'
+        - $ref: '#/components/parameters/ListingId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                name:
+                  type: string
+                  description: Original filename fallback
+                rank:
+                  type: integer
+                  format: int64
+                  minimum: 1
+                  description: Optional; defaults to max(rank)+1 per listing.
+      responses:
+        '200':
+          description: Image stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingImageUploadResponse'
+        '400':
+          description: Validation / multipart errors
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '401':
+          description: Env gated — missing X-Api-Key or Bearer
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '404':
+          description: Listing not found for shop
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '409':
+          description: Duplicate rank on listing
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+
+  /v3/display/listing-images/{listing_image_id}/fullxfull:
+    get:
+      tags: [Listing images]
+      summary: Serve full-size image bytes
+      operationId: getListingImageFullxfull
+      parameters:
+        - name: listing_image_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Image binary (Content-Type from stored mime).
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not found or file missing from disk.
+
+    head:
+      tags: [Listing images]
+      summary: Image metadata without body
+      operationId: headListingImageFullxfull
+      parameters:
+        - name: listing_image_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Exists
+        '404':
+          description: Not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Access token returned by `/v3/public/oauth/token`.
+
+  parameters:
+    ShopId:
+      name: shop_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    ListingId:
+      name: listing_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, emulator]
+      properties:
+        status:
+          type: string
+          example: ok
+        emulator:
+          type: string
+          example: faketsy
+
+    OAuthTokenAuthCodeJSON:
+      type: object
+      required: [grant_type, client_id, code, redirect_uri, code_verifier]
+      properties:
+        grant_type:
+          type: string
+          enum: [authorization_code]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+          description: Alternative to HTTP Basic when `FAKETSY_CLIENT_SECRET` is configured.
+        code:
+          type: string
+          description: From `/oauth/connect` redirect (`ets_…` prefix typical).
+        redirect_uri:
+          type: string
+          format: uri
+        code_verifier:
+          type: string
+          description: PKCE verifier paired with authorize-time `code_challenge` (S256).
+
+    OAuthTokenRefreshJSON:
+      type: object
+      required: [grant_type, client_id, refresh_token]
+      properties:
+        grant_type:
+          type: string
+          enum: [refresh_token]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        refresh_token:
+          type: string
+
+    OAuthTokenAuthCodeForm:
+      type: object
+      required: [grant_type, client_id, code, redirect_uri, code_verifier]
+      properties:
+        grant_type:
+          type: string
+          enum: [authorization_code]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        code:
+          type: string
+        redirect_uri:
+          type: string
+          format: uri
+        code_verifier:
+          type: string
+
+    OAuthTokenRefreshForm:
+      type: object
+      required: [grant_type, client_id, refresh_token]
+      properties:
+        grant_type:
+          type: string
+          enum: [refresh_token]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        refresh_token:
+          type: string
+
+    OAuthTokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3600
+        refresh_token:
+          type: string
+        refresh_token_expires_in:
+          type: integer
+          description: Seconds until refresh token lapses.
+
+    OAuthErrorJson:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+
+    UserMeResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        primary_email:
+          type: string
+        token_type:
+          type: string
+        emulator:
+          type: string
+          example: faketsy
+
+    ListingImageUploadResponse:
+      type: object
+      properties:
+        listing_id:
+          type: integer
+          format: int64
+        listing_image_id:
+          type: integer
+          format: int64
+        rank:
+          type: integer
+        url_fullxfull:
+          type: string
+          format: uri

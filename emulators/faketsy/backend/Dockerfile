@@ -3,6 +3,7 @@ WORKDIR /src
 RUN apk add --no-cache ca-certificates
 COPY go.mod ./
 COPY *.go ./
+COPY docs/openapi.yaml docs/openapi.yaml
 RUN go mod tidy && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /faketsy-api .
 
 FROM alpine:3.19

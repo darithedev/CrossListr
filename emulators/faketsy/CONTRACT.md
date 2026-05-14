@@ -7,10 +7,11 @@ CrossListr should implement against **this document** for Faketsy, not against l
 | Listener | Container port | Published (host) | Purpose |
 |----------|----------------|------------------|---------|
 | Auth + session + catalog | **8081** | **14381** | HTML login, `GET /oauth/connect` (PKCE), `GET/POST /api/v1/session/*`, `GET /api/v1/catalog/*` |
-| API (resources + token) | **8082** | **14382** | `POST /v3/public/oauth/token`, `GET /v3/application/users/me`, listing image routes |
+| API (OAuth token + resources + **`/swagger`**) | **8082** | **14382** | `POST /v3/public/oauth/token`, `GET /v3/application/users/me`, listing image routes, **`GET /openapi.yaml`**, **`GET /swagger`** |
 
 - Shopper UI static app: **14380** (`faketsy-frontend`), not an API.
 - On **crosslistr-emulators-integration**, CrossListr backend should call **`http://faketsy-backend:8082`** for Etsy-shaped resource and token routes. Use **8081** only if you need session or catalog from the app container (unusual).
+- Swagger UI example: **`http://127.0.0.1:14382/swagger`** (loads **`/openapi.yaml`** from this API process; Swagger assets from **jsdelivr** CDN).
 
 ## Environment
 
