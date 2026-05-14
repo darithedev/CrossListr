@@ -125,7 +125,7 @@ router.put('/:id', authMiddleware, async (req,res) => {
     try {
         const userId  = req.userId;
         const { id } = req.params;
-        const { title, description, category, condition, price, source, externl_id} = req.body;
+        const { title, description, category, condition, price, source, external_id} = req.body;
 
         if (!userId) {
             return res.status(401).json({
