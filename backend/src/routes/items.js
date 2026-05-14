@@ -27,11 +27,8 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
-                users.name 
-                AS listed_by
             FROM items
-            JOIN users ON items.user_id = users.id
-            WHERE users.id = $1;`,
+            WHERE items.user_id = $1;`,
             [userId]
         );
 
