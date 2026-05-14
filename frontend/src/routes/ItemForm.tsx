@@ -54,7 +54,49 @@ const ItemForm = () => {
     useEffect(() => {
         const cloudinary = (window as any).cloundinary;
 
-        const widget = cloudinary.createUploadWidget()
+        const widget = cloudinary.createUploadWidget({ 
+            cloudName: CLOUD_NAME, 
+            uploadPreset: UPLOAD_PRESET, 
+            sources: ["local", "url", "camera"],
+            showAdvancedOptions: true,
+            cropping: false,
+            multiple: true,
+            defaultSource: "local",
+            undefined: {
+                isTrusted: true,
+                _vts: 1778775168369
+            },
+            styles: {
+                palette: {
+                    window: "#FFFFFF",
+                    windowBorder: "#6A7481",
+                    tabIcon: "#3448C5",
+                    menuIcons: "#5A616A",
+                    textDark: "#000000",
+                    textLight: "#FFFFFF",
+                    link: "#3448C5",
+                    action: "#3448C5",
+                    inactiveTabIcon: "#0E2F5A",
+                    error: "#F44235",
+                    inProgress: "#3448C5",
+                    complete: "#20B832",
+                    sourceBg: "#F5FAFE"
+                },
+                fonts: {
+                    default: null,
+                    "'Fira Sans', sans-serif": {
+                        url: "https://fonts.googleapis.com/css?family=Fira+Sans",
+                        active: true
+                    }
+                }
+            }
+        }, 
+        (error: unknown, info: CloudinaryInfo) => {
+            if (error) {
+                console.error('Cloudinary widget error:', error)
+                return;
+            }
+        })
         
     }, [])
 
