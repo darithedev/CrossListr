@@ -325,6 +325,12 @@ components:
         expires_in:
           type: integer
           example: 7200
+        refresh_token_expires_in:
+          type: integer
+          description: >
+            Seconds until the refresh_token is invalid (authorization_code responses), or seconds
+            remaining on the existing refresh_token (grant_type=refresh_token). FakeBay always includes this field on successful token mints.
+          example: 7776000
         token_type:
           type: string
           example: User Access Token

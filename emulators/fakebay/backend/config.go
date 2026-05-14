@@ -2,17 +2,19 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type oauthConfig struct {
-	ClientID              string
-	ClientSecret          string
-	ClientDisplayName     string
-	AllowedRedirectURIs   map[string]struct{}
-	AuthCodeTTL           time.Duration
-	AccessTokenTTLSeconds int
+	ClientID                   string
+	ClientSecret               string
+	ClientDisplayName          string
+	AllowedRedirectURIs        map[string]struct{}
+	AuthCodeTTL                time.Duration
+	AccessTokenTTLSeconds      int
+	RefreshTokenTTLSeconds     int
 }
 
 func loadOAuthConfig() oauthConfig {
@@ -28,13 +30,22 @@ func loadOAuthConfig() oauthConfig {
 		}
 	}
 
+	// Default 90 days (~ real eBay long-lived refresh magnitude for local practice).
+	refreshSecs := 90 * 24 * 3600
+	if v := strings.TrimSpace(env("FAKEBAY_REFRESH_TOKEN_TTL_SECONDS", "")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			refreshSecs = n
+		}
+	}
+
 	return oauthConfig{
-		ClientID:              id,
-		ClientSecret:          secret,
-		ClientDisplayName:     display,
-		AllowedRedirectURIs:   allow,
-		AuthCodeTTL:           10 * time.Minute,
-		AccessTokenTTLSeconds: 7200,
+		ClientID:                   id,
+		ClientSecret:               secret,
+		ClientDisplayName:          display,
+		AllowedRedirectURIs:        allow,
+		AuthCodeTTL:                10 * time.Minute,
+		AccessTokenTTLSeconds:      7200,
+		RefreshTokenTTLSeconds:     refreshSecs,
 	}
 }
 

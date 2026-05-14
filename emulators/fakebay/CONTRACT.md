@@ -19,6 +19,7 @@ On the shared integration network, other containers typically use `http://fakeba
 | `FAKEBAY_CLIENT_SECRET` | `dev-fakebay-secret` | Basic auth password on token |
 | `FAKEBAY_CLIENT_DISPLAY_NAME` | `CrossListr` | Shown on the OAuth **consent** screen (third-party app name). |
 | `FAKEBAY_ALLOWED_REDIRECT_URIS` | *(empty)* | Comma-separated **exact** `redirect_uri` values. If empty, any `http`/`https` absolute URL is allowed (emulator-only). |
+| `FAKEBAY_REFRESH_TOKEN_TTL_SECONDS` | *(default: **7776000** = 90 days)* | Seconds of validity for a **refresh token** issued at code exchange (countdown also returned as `refresh_token_expires_in`). After expiry, `grant_type=refresh_token` yields **`invalid_grant`**. Ignored when unset or invalid; must be positive. |
 | `DATABASE_URL` | *(required in Docker)* | Postgres DSN for FakeBay users table (e.g. `postgres://fakebay:fakebay@fakebay-postgres:5432/fakebay?sslmode=disable`). |
 
 ## End-user login (auth listener)
@@ -103,9 +104,12 @@ Browser form from the consent page. Validates session + CSRF, then either redire
   "access_token": "v^1.1#i#...",
   "expires_in": 7200,
   "refresh_token": "v^1.1#r#...",
+  "refresh_token_expires_in": 7776000,
   "token_type": "User Access Token"
 }
 ```
+
+`refresh_token_expires_in` is seconds until this refresh token is no longer valid (same semantics as production eBay: after that the user must complete the authorize/consent flow again). Default lifetime is configurable via **`FAKEBAY_REFRESH_TOKEN_TTL_SECONDS`** (defaults to **90 days**).
 
 **`grant_type=refresh_token`**
 
@@ -114,9 +118,13 @@ Browser form from the consent page. Validates session + CSRF, then either redire
 | `grant_type` | `refresh_token` |
 | `refresh_token` | yes |
 
-**Success:** JSON with new `access_token`, `expires_in`, `token_type` (refresh token is not rotated in MVP).
+**Success:** JSON with new `access_token`, `expires_in`, `refresh_token_expires_in` (**seconds remaining** for the **same** refresh token), `token_type` (`refresh_token` is not rotated in MVP).
 
 **Error JSON:** HTTP 4xx with `error` and `error_description`, e.g. `invalid_client`, `invalid_grant`, `invalid_request`, `unsupported_grant_type`.
+
+### OAuth persistence (Postgres)
+
+Authorization **codes**, **access tokens**, and **refresh tokens** are stored in Postgres (tables `fakebay_oauth_*` from migration **`000006_oauth_tokens_postgres`**). Restarting FakeBay containers **does not** invalidate tokens that have not expired. **Browser session cookies** for the emulator UI/login flow (`fakebay_sid`) remain **process-local** unless you introduce your own sticky session handling.
 
 ## Bearer-protected sample route
 
