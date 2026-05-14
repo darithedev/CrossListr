@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Form, Button } from 'react-bootstrap'
+import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -43,6 +44,13 @@ type CloudinaryInfo = {
     event: string;
     info: CloudinaryPayload;
 };
+
+// Likely move to /helper dir
+const authHeaders = () => {
+    const token = localStorage.getItem('token')
+    if (!token) return {}
+    return { Authorization: `Bearer ${token}` }
+}
 
 const ItemForm = () => {
     const { id } = useParams();
@@ -224,6 +232,9 @@ const ItemForm = () => {
             </Form.Group>
 
             <Form.Group>
+                <Button type="button" variant="outline-success" onClick={() => saveItem(itemData)}>
+                    Save Draft
+                </Button>
                 <Button type="submit" variant="outline-success">
                     Submit
                 </Button>
