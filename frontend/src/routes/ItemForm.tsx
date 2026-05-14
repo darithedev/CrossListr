@@ -213,9 +213,15 @@ const ItemForm = () => {
         }
     };
 
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        saveItem(itemData);
+        try {
+            await saveItem(itemData);
+            alert('Successfully saved item!');
+            navigate('/home');
+        } catch (error) {
+            console.error('Failed to save item:', error)
+        }
     };
 
     return (
