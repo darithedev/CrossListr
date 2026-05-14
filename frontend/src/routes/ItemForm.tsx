@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ItemFormComponent from '../components/ItemFormComponent'
 
@@ -50,6 +50,8 @@ const ItemForm = () => {
     const isEditing = id !== undefined;
 
     const [itemData, setItemData] = useState<ItemData>(newItem);
+
+    const cloudinaryRef = useRef<CloudinaryWidget | null>(null);
 
     useEffect(() => {
         const cloudinary = (window as any).cloudinary;
@@ -105,6 +107,8 @@ const ItemForm = () => {
                 }
             }
         ) as CloudinaryWidget;
+
+        cloudinaryRef.current = widget;
         
     }, [])
 
