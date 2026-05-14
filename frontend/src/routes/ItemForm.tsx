@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ItemFormComponent from '../components/ItemFormComponent'
 
+const API_URL = import.meta.env.VITE_API_URL;
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
 type ItemData = {
     id: string;
     item_images: string[];
