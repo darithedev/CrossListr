@@ -109,6 +109,11 @@ const ItemForm = () => {
         ) as CloudinaryWidget;
 
         cloudinaryRef.current = widget;
+
+        return () => {
+            widget.destroy();
+            cloudinaryRef.current = null;
+        }
         
     }, [])
 
