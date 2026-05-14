@@ -95,6 +95,14 @@ const ItemForm = () => {
                     console.error('Cloudinary widget error:', error)
                     return;
                 }
+
+                if (info.event === 'success' && info.info) {
+                    const url = info.info.secure_url;
+
+                    if (!url) return;
+
+                    setItemData((prev) => ({ ...prev, item_images: [...prev.item_images, url]}));
+                }
             }
         ) as CloudinaryWidget;
         
