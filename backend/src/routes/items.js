@@ -22,16 +22,12 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.category, 
                 items.condition, 
                 items.price, 
-                items.item_images,
                 items.source, 
                 items.external_id,
                 items.created_at,
                 items.updated_at,
-                users.name 
-                AS listed_by
             FROM items
-            JOIN users ON items.user_id = users.id
-            WHERE users.id = $1;`,
+            WHERE items.user_id = $1;`,
             [userId]
         );
 
@@ -54,7 +50,7 @@ router.post('/', authMiddleware, async(req, res) => {
             });
         }
 
-        const { title, description, category, condition, price, item_images, source, external_id } = req.body;
+        const { title, description, category, condition, price, source, external_id } = req.body;
 
         if (!title || !description || !category || !condition || !price || !source) {
             return res.status(400).json({
@@ -63,23 +59,11 @@ router.post('/', authMiddleware, async(req, res) => {
         };
 
         const result = await pool.query(
-            `INSERT INTO items (user_id, title, description, category, condition, price, item_images, source, external_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING 
-                items.id,
-                items.user_id,
-                items.title,
-                items.description, 
-                items.category, 
-                items.condition, 
-                items.price, 
-                items.item_images,
-                items.source, 
-                items.external_id,
-                items.created_at,
-                items.updated_at
-            `,
-            [userId, title, description, category, condition, price, item_images, source, external_id]
+            `INSERT INTO items (user_id, title, description, category, condition, price, source, external_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING
+                items.id`,
+            [userId, title, description, category, condition, price, source, external_id]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -113,7 +97,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 items.category, 
                 items.condition, 
                 items.price, 
-                items.item_images,
                 items.source, 
                 items.external_id,
                 items.created_at,
@@ -142,7 +125,7 @@ router.put('/:id', authMiddleware, async (req,res) => {
     try {
         const userId  = req.userId;
         const { id } = req.params;
-        const { title, description, category, condition, price, item_images, source, externl_id} = req.body;
+        const { title, description, category, condition, price, source, external_id} = req.body;
 
         if (!userId) {
             return res.status(401).json({
@@ -162,8 +145,16 @@ router.put('/:id', authMiddleware, async (req,res) => {
 
         const result = await pool.query(
             `UPDATE items 
-            SET title = $1, description = $2, category = $3, condition = $4, price = $5, item_images = $6, source = $7, external_id = $8
-            WHERE user_id = $9 AND id = $10
+            SET 
+                title = $1,
+                description = $2,
+                category = $3,
+                condition = $4,
+                price = $5,
+                source = $6,
+                external_id = $7,
+                updated_at = NOW()
+            WHERE user_id = $8 AND id = $9
             RETURNING 
                 items.id,
                 items.title,
@@ -171,13 +162,12 @@ router.put('/:id', authMiddleware, async (req,res) => {
                 items.category, 
                 items.condition, 
                 items.price, 
-                items.item_images,
                 items.source, 
                 items.external_id,
                 items.created_at,
                 items.updated_at
             `,
-            [title, description, category, condition, price, item_images, source, externl_id, userId, id]
+            [title, description, category, condition, price, source, external_id, userId, id]
         );
 
         if (result.rows.length === 0) {
@@ -211,15 +201,30 @@ router.delete('/:id', authMiddleware, async (req, res) => {
         }
 
         const result = await pool.query(
-            `DELETE FROM items WHERE user_id = $1 AND id = $2 RETURNING items.id, items.title`,
+            `DELETE FROM items 
+            WHERE user_id = $1 
+                AND id = $2
+                AND status = 'draft'
+            RETURNING items.id, items.title`,
             [userId, id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Item was not found.' });
+        if (result.rows.length > 0) {
+            return res.status(200).json(result.rows[0]);
         };
 
-        return res.status(200).json(result.rows[0]);
+        const existingResult = await pool.query(
+            `SELECT id, status FROM items WHERE user_id = $1 AND id = $2`,
+            [userId, id]
+        );
+
+        if (existingResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Item was not found.' });
+        }
+
+        return res.status(409).json({
+            error: 'Items with listings cannot be deleted.'
+        });
     } catch (error) {
         console.error('DELETE /items/:id failed:', error);
         return res.status(500).json({
