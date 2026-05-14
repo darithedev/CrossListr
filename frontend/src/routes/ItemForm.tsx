@@ -52,7 +52,7 @@ const ItemForm = () => {
     const [itemData, setItemData] = useState<ItemData>(newItem);
 
     useEffect(() => {
-        const cloudinary = (window as any).cloundinary;
+        const cloudinary = (window as any).cloudinary;
 
         const widget = cloudinary.createUploadWidget({ 
             cloudName: CLOUD_NAME, 
@@ -90,13 +90,13 @@ const ItemForm = () => {
                     }
                 }
             }
-        }, 
-        (error: unknown, info: CloudinaryInfo) => {
-            if (error) {
-                console.error('Cloudinary widget error:', error)
-                return;
+        }, (error: unknown, info: CloudinaryInfo) => {
+                if (error) {
+                    console.error('Cloudinary widget error:', error)
+                    return;
+                }
             }
-        })
+        ) as CloudinaryWidget;
         
     }, [])
 
