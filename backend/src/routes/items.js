@@ -26,8 +26,12 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
+                item_images.image_url,
+                item_images.index_number
             FROM items
-            WHERE items.user_id = $1;`,
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.user_id = $1
+            ORDER BY items.id, item_images.index_number`,
             [userId]
         );
 
