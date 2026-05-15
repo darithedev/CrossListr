@@ -412,6 +412,24 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
             });
         }
 
+        // Get all for this item, ordered by index number
+        const images = await pool.query(
+            `SELECT id FROM item_images
+            WHERE item_id = $1 
+            ORDER BY index_number ASC, id ASC`,
+            [id]
+        );
+
+        // Renumbers images so index is contiguous after delete 
+        for (let i = 0; i < images.rows.length; i++) {
+            await pool.query(
+                `UPDATE item_images
+                SET index_number = $1, updated_at = NOW()
+                WHERE id = $2`,
+                [i, images.rows[i].id]
+            );
+        };
+
         return res.status(200).json(result.rows[0]);
     } catch (error) {
         console.error('DELETE /items/:id/images/:image_id failed:', error);
