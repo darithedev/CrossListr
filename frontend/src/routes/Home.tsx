@@ -29,6 +29,34 @@ type NormalizeItem = {
 
 type Items = Item[];
 
+
+function normalizeItems(rows: NormalizeItem[]): Items {
+    const items: Items = [];
+
+    for (const row of rows) {
+        const id = String(row.id);
+        const prev = items[items.length - 1];
+
+        if (!prev || prev.id !== id) {
+            items.push({
+                id,
+                title: row.title,
+                description: row.description,
+                category: row.category,
+                condition: row.condition,
+                price: Number(row.price),
+                item_images: [],
+            });
+        }
+
+        if (row.image_url) {
+            items[items.length -1].item_images.push(row.image_url);
+        }
+    }
+
+    return items;
+}
+
 const Home = () => {
     const navigate = useNavigate();
     const auth = useContext(UserContext);
