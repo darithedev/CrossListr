@@ -104,9 +104,13 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 items.source, 
                 items.external_id,
                 items.created_at,
-                items.updated_at
+                items.updated_at,
+                item_images.image_url,
+                item_images.index_number
             FROM items
-            WHERE items.id = $1 AND user_id = $2`,
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.id = $1 AND items.user_id = $2
+            ORDER BY item_images.index_number ASC`,
             [id, userId]
         );
 
@@ -116,7 +120,29 @@ router.get('/:id', authMiddleware, async (req, res) => {
             });
         }
 
-        return res.status(200).json(result.rows[0]);
+        const rowObj = result.rows[0];
+        const images = result.rows
+            .filter((row) => row.image_url != null)
+            .map((row) => ({
+                url: row.image_url,
+                index: row.index_number
+            }))
+            .sort((a, b) => a.index - b.index);
+
+        const item = {
+            id: rowObj.id,
+            title: rowObj.title,
+            description: rowObj.description,
+            category: rowObj.category,
+            condition: rowObj.condition,
+            price: rowObj.price,
+            source: rowObj.source,
+            external_id: rowObj.external_id,
+            created_at: rowObj.created_at,
+            updated_at: rowObj.updated_at,
+        };
+
+        return res.status(200).json({ ...item, images });
     } catch (error) {
         console.error('GET /items/:id failed:', error);
         return res.status(500).json({
@@ -330,6 +356,15 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
     } catch (error) {
         console.error('POST /items/:id/images failed:', error.message);
         res.status(500).json({ error: 'Error! Could not add image for this item.' });
+    }
+});
+
+// This is specifically for edit feat where the index can be rearranged 
+router.put('/:id/images/:image_id', authMiddleware, async (req, res) => {
+    try {
+        
+    } catch (error) {
+
     }
 });
 
