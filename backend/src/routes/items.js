@@ -242,8 +242,40 @@ router.get('/:id/images', authMiddleware, async (req, res) => {
         const userId = req.userId;
         const { id } = req.params;
 
-    } catch (error) {
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        }
 
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            });
+        }
+
+        const itemCheck = await pool.query(
+            `SELECT 1 FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Item not found.' })
+        }
+
+        const result = await pool.query(
+            `SELECT 
+                image_url,
+                index_number AS index
+            FROM item_images
+            WHERE item_id = $1
+            ORDER BY index_number ASC`,
+            [id]
+        );
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('GET /items/:id/images failed:', error.message);
+        res.status(500).json({ error: 'Error! Could not get images for this item.' });
     }
 });
 
