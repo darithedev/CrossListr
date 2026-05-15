@@ -312,6 +312,7 @@ func handleOAuthConsentPost(w http.ResponseWriter, r *http.Request, cfg oauthCon
 	q.Set("code_challenge", r.PostForm.Get("code_challenge"))
 	q.Set("code_challenge_method", r.PostForm.Get("code_challenge_method"))
 
+	redir := strings.TrimSpace(r.PostForm.Get("redirect_uri"))
 	p, _, errCode, errDesc := validateAuthzQuery(q, cfg)
 	if errCode != "" {
 		st := r.PostForm.Get("state")
