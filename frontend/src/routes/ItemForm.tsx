@@ -278,7 +278,7 @@ const ItemForm = () => {
             await axios.post(
                 `${API_URL}/v1/items/${itemId}/images`,
                 {
-                    image_url: images[i],
+                    image_url: images[i].url,
                     index_number: imageCountRef.current + i,
                 },
                 { headers: authHeaders() }
