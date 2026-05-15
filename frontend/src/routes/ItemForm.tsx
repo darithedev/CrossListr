@@ -125,7 +125,10 @@ const ItemForm = () => {
 
                     if (!url) return;
 
-                    setItemData((prev) => ({ ...prev, item_images: [...prev.item_images, url]}));
+                    setItemData((prev) => {
+                        if (prev.item_images.length >= MAX_IMAGES) return prev;
+                        return { ...prev, item_images: [...prev.item_images, url]};
+                    });
                 }
             }
         ) as CloudinaryWidget;
