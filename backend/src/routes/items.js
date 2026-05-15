@@ -26,6 +26,7 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
+                item_images.id AS image_id,
                 item_images.image_url,
                 item_images.index_number
             FROM items
@@ -105,6 +106,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
+                item_images.id AS image_id,
                 item_images.image_url,
                 item_images.index_number
             FROM items
@@ -124,6 +126,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
         const images = result.rows
             .filter((row) => row.image_url != null)
             .map((row) => ({
+                image_id: row.image_id,
                 url: row.image_url,
                 index: row.index_number
             }))
