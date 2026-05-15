@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 type Item = {
     id: string;
     title: string;
+    price: number;
     item_images: string[];
 };
 
@@ -19,8 +20,9 @@ const ItemCard = ({ items }: ItemCardProps) => {
             {items.map((item) => (
                 <Card key={item.id} style={{ width: '18rem' }}>
                     <Card.Img variant="top" src={item.item_images[0]} />
-                     <Card.Body>
+                    <Card.Body>
                         <Card.Title>{item.title}</Card.Title>
+                        <span>${item.price}</span>
                         <Button variant="primary">Select</Button>
                         <Button onClick={() => 
                             navigate(`/items/${item.id}/edit`)
