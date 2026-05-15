@@ -64,6 +64,21 @@ const Home = () => {
     // Items are pulled from GET /items endpoint
     const [items, setItems] = useState<Items>([]);
 
+    useEffect(() => {
+        const getItems = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const { data } = await axios.get(`${API_URL}/v1/items`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                setItems(normalizeItems(data));
+            } catch (error) {
+                console.error('Failed to load items:', error);
+            }
+        };
+        getItems();
+    }, []);
+
     const handleLogout = () => {
         auth?.logout();
         navigate('/login');
