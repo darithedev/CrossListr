@@ -7,6 +7,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+const MAX_IMAGES = 12;
+
 type ItemData = {
     id: string;
     item_images: string[];
@@ -237,7 +239,7 @@ const ItemForm = () => {
                         </div>
                     ))}
                 </div>
-                <p>Photos: {itemData.item_images.length}/12</p>
+                <p>Photos: {itemData.item_images.length}/{MAX_IMAGES}</p>
                 <Button
                     type="button"
                     variant="outline-primary"
@@ -307,9 +309,9 @@ const ItemForm = () => {
                 <Button type="button" variant="outline-warning" onClick={clearForm}>
                     Reset
                 </Button>
-                {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
-                Back
-            </Button>*/}
+                <Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
+                    Back
+                </Button>
             </Form.Group>
         </Form>
     )
