@@ -138,16 +138,16 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		writeEtsyJSON(w, http.StatusBadRequest, map[string]string{"error": "expected multipart/form-data"})
 		return
 	}
-	fh, err := r.FormFile("image")
+	file, header, err := r.FormFile("image")
 	if err != nil {
 		writeEtsyJSON(w, http.StatusBadRequest, map[string]string{"error": "multipart field image is required (Etsy pattern)"})
 		return
 	}
-	defer func() { _ = fh.Close() }()
+	defer func() { _ = file.Close() }()
 
 	fileName := strings.TrimSpace(r.FormValue("name"))
 	if fileName == "" {
-		fileName = filepath.Base(fh.Filename)
+		fileName = filepath.Base(header.Filename)
 	}
 	if fileName == "" || fileName == "." {
 		fileName = "upload.bin"
@@ -172,19 +172,13 @@ func handleEtsyListingImageUpload(w http.ResponseWriter, r *http.Request, db *sq
 		}
 	}
 
-	f, err := fh.Open()
-	if err != nil {
-		writeEtsyJSON(w, http.StatusBadRequest, map[string]string{"error": "cannot read upload"})
-		return
-	}
-	defer func() { _ = f.Close() }()
-	data, err := io.ReadAll(io.LimitReader(f, 32<<20))
+	data, err := io.ReadAll(io.LimitReader(file, 32<<20))
 	if err != nil {
 		writeEtsyJSON(w, http.StatusBadRequest, map[string]string{"error": "cannot read upload"})
 		return
 	}
 
-	mime := fh.Header.Get("Content-Type")
+	mime := header.Header.Get("Content-Type")
 	if mime == "" {
 		mime = mimeFromListingName(fileName)
 	}
