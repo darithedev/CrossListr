@@ -314,7 +314,7 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
             });
         };
 
-        if (Number(index_number) < 0 || Number(index_number > 11)) {
+        if (Number(index_number) < 0 || Number(index_number) > 11) {
             return res.status(400).json({
                 error: 'Index must be between 0 and 11 (max 12 images).'
             });
