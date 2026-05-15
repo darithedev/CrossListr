@@ -70,6 +70,7 @@ const ItemForm = () => {
     const isEditing = id !== undefined;
 
     const [itemData, setItemData] = useState<ItemData>(newItem);
+    const [isLoading, setIsLoading] = useState(isEditing); 
 
     const cloudinaryRef = useRef<CloudinaryWidget | null>(null);
 
@@ -184,10 +185,45 @@ const ItemForm = () => {
     };
 
     useEffect(() => {
-        if (isEditing && itemData) {
-            setItemData(itemData);
+        if (!isEditing || !id) {
+            setIsLoading(false);
+            return;
         }
-    }, [isEditing, itemData]);
+
+        setIsLoading(true);
+
+        const loadItem = async () => {
+            try {
+                const { data } = await axios.get<ItemResponse>(
+                    `${API_URL}/v1/items/${id}`,
+                    { headers: authHeaders() }
+                );
+
+                const urls = data.images.map((img) => img.url);
+
+                imageCountRef.current = urls.length;
+
+                setItemData({
+                    id: String(data.id),
+                    item_images: urls,
+                    title: data.title || '',
+                    description: data.description || '',
+                    category: data.category || '',
+                    condition: data.condition || '',
+                    price: Number(data.price || 0),
+                });
+            } catch (error) {
+                console.error('Failed to load item details:', error);
+                alert('Oops! Could not load item details.');
+                navigate('/home');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadItem();
+
+    }, [isEditing, id, navigate]);
 
     const saveItem = async (item: ItemData): Promise<void> => {
         const payload = {
