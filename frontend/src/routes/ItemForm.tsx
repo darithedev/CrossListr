@@ -11,7 +11,7 @@ const MAX_IMAGES = 12;
 
 type ItemData = {
     id: string;
-    item_images: string[];
+    item_images: { url: string; image_id?: number }[];
     title: string;
     description: string;
     category: string;
@@ -26,7 +26,7 @@ type ItemResponse = {
     category: string;
     condition: string;
     price: number;
-    images: { url: string; index: number }[];
+    images: { image_id: number; url: string; index: number }[];
 }
 
 const newItem: ItemData = {
@@ -128,7 +128,7 @@ const ItemForm = () => {
 
                     setItemData((prev) => {
                         if (prev.item_images.length >= MAX_IMAGES) return prev;
-                        return { ...prev, item_images: [...prev.item_images, url]};
+                        return { ...prev, item_images: [...prev.item_images, { url }]};
                     });
                 }
             }
@@ -168,9 +168,28 @@ const ItemForm = () => {
         setItemData((prev) => ({ ...prev, price }));
     };
 
-    const handleRemoveImage = (index: number) => {
+    const handleRemoveImage = async (index: number) => {
+        const image = itemData.item_images[index];
+
+        if (!image) return;
+
+        const itemId = itemData.id;
+
+        if (isEditing && itemId && image.image_id != null) {
+            try {
+                await axios.delete(
+                    `${API_URL}/v1/items/${itemId}/images/${image.image_id}`,
+                    { headers: authHeaders() }
+                );
+            } catch (error) {
+                console.error('Failed to delete this image:', error);
+                alert('Error! Image was not deleted.')
+                return;
+            }
+        };
+
         setItemData((prev) => ({ ...prev, item_images: prev.item_images.filter((_, i) => i !== index)}))
-    }
+    };
 
     const clearForm = () => {
         setItemData({
@@ -199,7 +218,10 @@ const ItemForm = () => {
                     { headers: authHeaders() }
                 );
 
-                const urls = data.images.map((img) => img.url);
+                const urls = data.images.map((img) => ({
+                    url: img.url,
+                    image_id: img.image_id
+                }));
 
                 imageCountRef.current = urls.length;
 
@@ -281,10 +303,10 @@ const ItemForm = () => {
 
             <Form.Group controlId="images">
                 <div className="upload-box">
-                    {itemData.item_images.map((url, index) => (
-                        <div key={`${url}-${index}`}>
-                            <img src={url} alt=""/>
-                            <button onClick={() => handleRemoveImage(index)}>x</button>
+                    {itemData.item_images.map((img, index) => (
+                        <div key={`${index}`}>
+                            <img src={img.url} alt=""/>
+                            <button type="button" onClick={() => handleRemoveImage(index)}>x</button>
                         </div>
                     ))}
                 </div>
