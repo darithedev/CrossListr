@@ -102,6 +102,9 @@ const Login = () => {
             <Button type="button" variant="outline-warning" onClick={clearLogin}>
                 Reset
             </Button>
+            <Button type="button" variant="outline-warning" onClick={() => navigate("/signup"}>
+                No Account? Sign up for free!
+            </Button>
             {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
                 Back
             </Button>*/}
