@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import Home from './routes/Home'
 import Login from './routes/Login'
@@ -16,7 +16,8 @@ function App() {
         <Route path="/items/:id/edit" element={<ItemForm />} />
         <Route path="/items/:id" element={<ItemDetails />} />
       </Route>
-      
+
+      <Route path="/" element={<Navigate to="/signup" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
     </Routes>
