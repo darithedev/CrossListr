@@ -1,7 +1,10 @@
-import { useState, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 import ItemCard from '../components/ItemCard';
+import axios from 'axios'
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 type Item = {
     id: string;
@@ -13,7 +16,46 @@ type Item = {
     price: number;
 };
 
+type NormalizeItem = {
+    id: string | number;
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+    image_url: string | null;
+    index_number: number | null;
+};
+
 type Items = Item[];
+
+
+function normalizeItems(rows: NormalizeItem[]): Items {
+    const items: Items = [];
+
+    for (const row of rows) {
+        const id = String(row.id);
+        const prev = items[items.length - 1];
+
+        if (!prev || prev.id !== id) {
+            items.push({
+                id,
+                title: row.title,
+                description: row.description,
+                category: row.category,
+                condition: row.condition,
+                price: Number(row.price),
+                item_images: [],
+            });
+        }
+
+        if (row.image_url) {
+            items[items.length -1].item_images.push(row.image_url);
+        }
+    }
+
+    return items;
+}
 
 const Home = () => {
     const navigate = useNavigate();
@@ -22,14 +64,29 @@ const Home = () => {
     // Items are pulled from GET /items endpoint
     const [items, setItems] = useState<Items>([]);
 
+    useEffect(() => {
+        const getItems = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const { data } = await axios.get(`${API_URL}/v1/items`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                setItems(normalizeItems(data));
+            } catch (error) {
+                console.error('Failed to load items:', error);
+            }
+        };
+        getItems();
+    }, []);
+
     const handleLogout = () => {
         auth?.logout();
         navigate('/login');
     }
     return (
         <div className="home-container">
-            <h1>Hello Home Route</h1>
             <ItemCard items={items}/>
+            <button onClick={() => navigate('/items/new')}>Add New Item</button>
             <button onClick={() => handleLogout()}>Logout</button>
         </div>
     )

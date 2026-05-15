@@ -1,3 +1,23 @@
+# CrossListr app (connects to emulators on `crosslistr-emulators-integration`).
+#
+# 1) Start emulators first (creates the shared network):
+#    docker compose -f emulators/compose.yaml up -d --build
+# 2) Start CrossListr:
+#    docker compose up -d --build
+#
+# From Node inside `backend`, use emulator DNS aliases:
+#   http://fakebay-backend:8081  (auth listener)
+#   http://fakebay-backend:8082  (API / OAuth token path later)
+#   http://fakify-backend:8080
+#   http://faketsy-backend:8081  (auth listener)
+#   http://faketsy-backend:8082  (API / token)
+#   UIs: http://fakebay-frontend:80  etc.
+#
+# Browser on your machine still uses published ports:
+#   localhost:14180, localhost:14280, localhost:14380
+
+name: crosslistr
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,7 +30,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U crosslistr -d crosslistr_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,6 +42,9 @@ services:
       context: ./migrations
       dockerfile: Dockerfile
     environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       DB_HOST: postgres
     depends_on:
       postgres:
@@ -35,8 +58,13 @@ services:
       dockerfile: Dockerfile
     environment:
       PORT: ${PORT}
+      LISTEN_HOST: "0.0.0.0"
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
+      FAKEBAY_AUTH_URL: http://fakebay-backend:8081
+      FAKEBAY_API_URL: http://fakebay-backend:8082
+      FAKIFY_API_URL: http://fakify-backend:8080
+      FAKETSY_API_URL: http://faketsy-backend:8082
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -44,6 +72,7 @@ services:
       - "3000:3000"
     networks:
       - app
+      - emulators-integration
 
   frontend:
     build:
@@ -51,16 +80,22 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME}
+        VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET}
     depends_on:
       - backend
     ports:
       - "5173:5173"
     networks:
       - app
+      - emulators-integration
 
 networks:
   app:
     driver: bridge
+  emulators-integration:
+    external: true
+    name: crosslistr-emulators-integration
 
 volumes:
   pgdata:

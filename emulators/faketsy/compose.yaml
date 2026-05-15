@@ -1,0 +1,122 @@
+services:
+  faketsy-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: faketsy
+      POSTGRES_PASSWORD: faketsy
+      POSTGRES_DB: faketsy
+    volumes:
+      - faketsy_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faketsy -d faketsy"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - faketsy
+
+  faketsy-migrate:
+    build:
+      context: ./migrations
+      dockerfile: Dockerfile
+    command:
+      [
+        "-database",
+        "postgres://faketsy:faketsy@faketsy-postgres:5432/faketsy?sslmode=disable",
+        "up",
+      ]
+    depends_on:
+      faketsy-postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - faketsy
+
+  faketsy-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      FAKETSY_AUTH_ADDR: ":8081"
+      FAKETSY_API_ADDR: ":8082"
+      DATABASE_URL: postgres://faketsy:faketsy@faketsy-postgres:5432/faketsy?sslmode=disable
+      FAKETSY_UPLOAD_DIR: /tmp/faketsy-upload
+      FAKETSY_PUBLIC_ORIGIN: "http://127.0.0.1:14382"
+      FAKETSY_UI_ORIGINS: "http://127.0.0.1:14380,http://localhost:14380"
+      FAKETSY_CLIENT_ID: dev-faketsy-client
+      # FAKETSY_CLIENT_SECRET: set for confidential-client style token auth (optional; PKCE demos omit it).
+      # FAKETSY_ALLOWED_REDIRECT_URIS: comma-separated exact redirect_uri allowlist (empty = any http(s) origin).
+      # Optional dev auth on listing-image routes only (x-api-key + Bearer when set):
+      # FAKETSY_API_KEY: dev-keystring
+      # FAKETSY_ACCESS_TOKEN: dev-bearer-token
+    depends_on:
+      faketsy-migrate:
+        condition: service_completed_successfully
+    ports:
+      - "14381:8081"
+      - "14382:8082"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8081/health >/dev/null && wget -qO- http://127.0.0.1:8082/health >/dev/null",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      faketsy:
+      integration:
+        aliases:
+          - faketsy-backend
+
+  faketsy-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      faketsy-backend:
+        condition: service_healthy
+    ports:
+      - "14380:80"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      faketsy:
+      integration:
+        aliases:
+          - faketsy-frontend
+
+  faketsy-smoke:
+    profiles: [smoke]
+    image: curlimages/curl:8.11.1
+    depends_on:
+      faketsy-backend:
+        condition: service_healthy
+      faketsy-frontend:
+        condition: service_healthy
+    networks:
+      - faketsy
+    command:
+      [
+        "sh",
+        "-c",
+        "set -e; curl -sf http://faketsy-backend:8081/health | grep -q faketsy; curl -sf http://faketsy-backend:8082/health | grep -q faketsy; curl -sf http://faketsy-frontend:80/ | grep -q Faketsy; echo faketsy smoke OK",
+      ]
+    restart: "no"
+
+networks:
+  faketsy:
+    driver: bridge
+  integration:
+    name: crosslistr-emulators-integration
+    driver: bridge
+
+volumes:
+  faketsy_pgdata:

@@ -1,0 +1,14 @@
+# Run all emulators as one Compose project (Docker Compose v2.20+ `include`).
+# From repo root: docker compose -f emulators/compose.yaml up --build
+# From emulators/:   docker compose up --build
+#
+# Shared Docker network `crosslistr-emulators-integration` is declared in each
+# emulator compose so CrossListr (repo root docker-compose.yml) can attach and
+# resolve: fakebay-backend, fakebay-frontend, fakify-backend, …
+
+name: crosslistr-emulators
+
+include:
+  - path: ./fakebay/compose.yaml
+  - path: ./fakify/compose.yaml
+  - path: ./faketsy/compose.yaml

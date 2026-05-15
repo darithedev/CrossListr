@@ -1,0 +1,470 @@
+openapi: 3.0.3
+info:
+  title: FakeBay emulator — API listener
+  description: |
+    Token exchange and **Bearer**-protected seller APIs for the FakeBay API process (`FAKEBAY_API_ADDR`, default `:8082`).
+    Complete the browser **authorization code** flow on the **auth** listener (`:8081`; `GET /oauth2/authorize` + consent), then exchange `code` here.
+
+    **This process also serves:** **`GET /openapi.yaml`** (this spec) and **`GET /swagger`** (Swagger UI). Session JSON and public catalog (`/api/v1/session/*`, `/api/v1/catalog/*`) live on the **auth** port, not documented here.
+
+    Token requests use **`application/x-www-form-urlencoded`** (URL-encoded body) and require **HTTP Basic** with `FAKEBAY_CLIENT_ID` / `FAKEBAY_CLIENT_SECRET` on every `/identity/v1/oauth2/token` call.
+  version: '1.1'
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:14182
+    description: Published host port (docker-compose default)
+  - url: http://127.0.0.1:14182
+  - url: http://fakebay-backend:8082
+    description: Integration network (in-container)
+
+tags:
+  - name: Discovery
+    description: OpenAPI document and Swagger UI (this binary).
+  - name: Health
+  - name: OAuth2
+    description: Client credentials via Basic auth; user tokens are Bearer.
+  - name: Seller listings
+    description: CRUD for the seller identified by the access token (`sub` = user email).
+
+paths:
+  /openapi.yaml:
+    get:
+      tags: [Discovery]
+      summary: Embedded OpenAPI 3 specification
+      operationId: getOpenAPISpec
+      responses:
+        '200':
+          description: YAML document
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  /swagger:
+    get:
+      tags: [Discovery]
+      summary: Swagger UI for this listener
+      operationId: getSwaggerUI
+      responses:
+        '200':
+          description: HTML page loading Swagger UI
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness
+      operationId: getHealth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /identity/v1/oauth2/token:
+    post:
+      tags: [OAuth2]
+      summary: Obtain user access token
+      description: |
+        `Authorization: Basic base64(client_id:client_secret)` must match `FAKEBAY_CLIENT_ID` / `FAKEBAY_CLIENT_SECRET`.
+      operationId: postToken
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/TokenRequestAuthCode'
+                - $ref: '#/components/schemas/TokenRequestRefresh'
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid request / grant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+        '401':
+          description: Invalid client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /api/v1/oauth/whoami:
+    get:
+      tags: [OAuth2]
+      summary: Validate Bearer token
+      operationId: getWhoami
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token subject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhoamiResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /api/v1/seller/listings:
+    get:
+      tags: [Seller listings]
+      summary: List my listings
+      description: |
+        Newest updated first. Optional `limit` query (default **50**, max **100**; invalid values fall back to default).
+      operationId: listSellerListings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Newest updated first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingCollection'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/UserNotFound'
+
+    post:
+      tags: [Seller listings]
+      summary: Create listing
+      operationId: createSellerListing
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/UserNotFound'
+
+  /api/v1/seller/listings/{id}:
+    get:
+      tags: [Seller listings]
+      summary: Get one listing (owned)
+      operationId: getSellerListing
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/UserNotFound'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Seller listings]
+      summary: Partial update (owned)
+      operationId: patchSellerListing
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchListingRequest'
+      responses:
+        '200':
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/UserNotFound'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Seller listings]
+      summary: Delete listing (owned)
+      operationId: deleteSellerListing
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ListingId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, id]
+                properties:
+                  ok:
+                    type: boolean
+                  id:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/UserNotFound'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Use `client_id` as username and `client_secret` as password.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: User Access Token
+      description: Opaque token from `/identity/v1/oauth2/token`.
+
+  parameters:
+    ListingId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OAuthError'
+    BadRequest:
+      description: Validation or JSON error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Listing not found or not owned
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    UserNotFound:
+      description: Token subject has no FakeBay user row
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, emulator]
+      properties:
+        status:
+          type: string
+          example: ok
+        emulator:
+          type: string
+          example: fakebay
+
+    TokenRequestAuthCode:
+      type: object
+      required: [grant_type, code, redirect_uri]
+      properties:
+        grant_type:
+          type: string
+          enum: [authorization_code]
+        code:
+          type: string
+          description: From authorize redirect (`fbac_…`)
+        redirect_uri:
+          type: string
+          format: uri
+          description: Must match the authorize request exactly
+
+    TokenRequestRefresh:
+      type: object
+      required: [grant_type, refresh_token]
+      properties:
+        grant_type:
+          type: string
+          enum: [refresh_token]
+        refresh_token:
+          type: string
+
+    TokenResponse:
+      type: object
+      required: [access_token, expires_in, token_type]
+      properties:
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+          example: 7200
+        refresh_token_expires_in:
+          type: integer
+          description: >
+            Seconds until the refresh_token is invalid (authorization_code responses), or seconds
+            remaining on the existing refresh_token (grant_type=refresh_token). FakeBay always includes this field on successful token mints.
+          example: 7776000
+        token_type:
+          type: string
+          example: User Access Token
+        refresh_token:
+          type: string
+          description: Present for `authorization_code` grant only (MVP does not rotate on refresh).
+
+    OAuthError:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+
+    WhoamiResponse:
+      type: object
+      properties:
+        sub:
+          type: string
+          description: Seller email
+        token_type:
+          type: string
+        emulator:
+          type: string
+
+    Listing:
+      type: object
+      required: [id, title, description, priceCents, currency, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        priceCents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ListingCollection:
+      type: object
+      required: [listings]
+      properties:
+        listings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Listing'
+
+    CreateListingRequest:
+      type: object
+      required: [title, priceCents]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          default: ''
+        priceCents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          default: USD
+          description: Optional; defaults to USD (uppercase ISO 4217).
+
+    PatchListingRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priceCents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
