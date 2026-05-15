@@ -7,15 +7,27 @@ const API_URL = import.meta.env.VITE_API_URL;
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+const MAX_IMAGES = 12;
+
 type ItemData = {
     id: string;
-    item_images: string[];
+    item_images: { url: string; image_id?: number }[];
     title: string;
     description: string;
     category: string;
     condition: string;
     price: number;
 };
+
+type ItemResponse = {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+    images: { image_id: number; url: string; index: number }[];
+}
 
 const newItem: ItemData = {
     id: "",
@@ -58,6 +70,7 @@ const ItemForm = () => {
     const isEditing = id !== undefined;
 
     const [itemData, setItemData] = useState<ItemData>(newItem);
+    const [isLoading, setIsLoading] = useState(isEditing); 
 
     const cloudinaryRef = useRef<CloudinaryWidget | null>(null);
 
@@ -113,7 +126,10 @@ const ItemForm = () => {
 
                     if (!url) return;
 
-                    setItemData((prev) => ({ ...prev, item_images: [...prev.item_images, url]}));
+                    setItemData((prev) => {
+                        if (prev.item_images.length >= MAX_IMAGES) return prev;
+                        return { ...prev, item_images: [...prev.item_images, { url }]};
+                    });
                 }
             }
         ) as CloudinaryWidget;
@@ -152,9 +168,28 @@ const ItemForm = () => {
         setItemData((prev) => ({ ...prev, price }));
     };
 
-    const handleRemoveImage = (index: number) => {
+    const handleRemoveImage = async (index: number) => {
+        const image = itemData.item_images[index];
+
+        if (!image) return;
+
+        const itemId = itemData.id;
+
+        if (isEditing && itemId && image.image_id != null) {
+            try {
+                await axios.delete(
+                    `${API_URL}/v1/items/${itemId}/images/${image.image_id}`,
+                    { headers: authHeaders() }
+                );
+            } catch (error) {
+                console.error('Failed to delete this image:', error);
+                alert('Error! Image was not deleted.')
+                return;
+            }
+        };
+
         setItemData((prev) => ({ ...prev, item_images: prev.item_images.filter((_, i) => i !== index)}))
-    }
+    };
 
     const clearForm = () => {
         setItemData({
@@ -169,10 +204,48 @@ const ItemForm = () => {
     };
 
     useEffect(() => {
-        if (isEditing && itemData) {
-            setItemData(itemData);
+        if (!isEditing || !id) {
+            setIsLoading(false);
+            return;
         }
-    }, [isEditing, itemData]);
+
+        setIsLoading(true);
+
+        const loadItem = async () => {
+            try {
+                const { data } = await axios.get<ItemResponse>(
+                    `${API_URL}/v1/items/${id}`,
+                    { headers: authHeaders() }
+                );
+
+                const urls = data.images.map((img) => ({
+                    url: img.url,
+                    image_id: img.image_id
+                }));
+
+                imageCountRef.current = urls.length;
+
+                setItemData({
+                    id: String(data.id),
+                    item_images: urls,
+                    title: data.title || '',
+                    description: data.description || '',
+                    category: data.category || '',
+                    condition: data.condition || '',
+                    price: Number(data.price || 0),
+                });
+            } catch (error) {
+                console.error('Failed to load item details:', error);
+                alert('Oops! Could not load item details.');
+                navigate('/home');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadItem();
+
+    }, [isEditing, id, navigate]);
 
     const saveItem = async (item: ItemData): Promise<void> => {
         const payload = {
@@ -205,7 +278,7 @@ const ItemForm = () => {
             await axios.post(
                 `${API_URL}/v1/items/${itemId}/images`,
                 {
-                    image_url: images[i],
+                    image_url: images[i].url,
                     index_number: imageCountRef.current + i,
                 },
                 { headers: authHeaders() }
@@ -230,14 +303,14 @@ const ItemForm = () => {
 
             <Form.Group controlId="images">
                 <div className="upload-box">
-                    {itemData.item_images.map((url, index) => (
-                        <div key={`${url}-${index}`}>
-                            <img src={url} alt=""/>
-                            <button onClick={() => handleRemoveImage(index)}>x</button>
+                    {itemData.item_images.map((img, index) => (
+                        <div key={`${index}`}>
+                            <img src={img.url} alt=""/>
+                            <button type="button" onClick={() => handleRemoveImage(index)}>x</button>
                         </div>
                     ))}
                 </div>
-                <p>Photos: {itemData.item_images.length}/12</p>
+                <p>Photos: {itemData.item_images.length}/{MAX_IMAGES}</p>
                 <Button
                     type="button"
                     variant="outline-primary"

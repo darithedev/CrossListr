@@ -26,6 +26,7 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
+                item_images.id AS image_id,
                 item_images.image_url,
                 item_images.index_number
             FROM items
@@ -104,9 +105,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 items.source, 
                 items.external_id,
                 items.created_at,
-                items.updated_at
+                items.updated_at,
+                item_images.id AS image_id,
+                item_images.image_url,
+                item_images.index_number
             FROM items
-            WHERE items.id = $1 AND user_id = $2`,
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.id = $1 AND items.user_id = $2
+            ORDER BY item_images.index_number ASC`,
             [id, userId]
         );
 
@@ -116,7 +122,30 @@ router.get('/:id', authMiddleware, async (req, res) => {
             });
         }
 
-        return res.status(200).json(result.rows[0]);
+        const rowObj = result.rows[0];
+        const images = result.rows
+            .filter((row) => row.image_url != null)
+            .map((row) => ({
+                image_id: row.image_id,
+                url: row.image_url,
+                index: row.index_number
+            }))
+            .sort((a, b) => a.index - b.index);
+
+        const item = {
+            id: rowObj.id,
+            title: rowObj.title,
+            description: rowObj.description,
+            category: rowObj.category,
+            condition: rowObj.condition,
+            price: rowObj.price,
+            source: rowObj.source,
+            external_id: rowObj.external_id,
+            created_at: rowObj.created_at,
+            updated_at: rowObj.updated_at,
+        };
+
+        return res.status(200).json({ ...item, images });
     } catch (error) {
         console.error('GET /items/:id failed:', error);
         return res.status(500).json({
@@ -330,6 +359,86 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
     } catch (error) {
         console.error('POST /items/:id/images failed:', error.message);
         res.status(500).json({ error: 'Error! Could not add image for this item.' });
+    }
+});
+
+router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id, image_id } = req.params;
+        
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } 
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'invalid item id.'
+            });
+        }
+
+        if (!image_id || isNaN(Number(image_id))) {
+            return res.status(400).json({
+                error: 'invalid item image id.'
+            });
+        }
+
+        const itemCheck = await pool.query(
+            `SELECT id, status FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            });
+        }
+
+        if (itemCheck.rows[0].status !== 'draft') {
+            return res.status(409).json({
+                error: "Image added to an item with an active listing cannot be deleted."
+            });
+        }
+
+        const result = await pool.query(
+            `DELETE FROM item_images 
+            WHERE item_id = $1 AND id = $2
+            RETURNING item_images.id`,
+            [id, image_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                error: 'Image was not found for this item.' 
+            });
+        }
+
+        // Get all for this item, ordered by index number
+        const images = await pool.query(
+            `SELECT id FROM item_images
+            WHERE item_id = $1 
+            ORDER BY index_number ASC, id ASC`,
+            [id]
+        );
+
+        // Renumbers images so index is contiguous after delete 
+        for (let i = 0; i < images.rows.length; i++) {
+            await pool.query(
+                `UPDATE item_images
+                SET index_number = $1, updated_at = NOW()
+                WHERE id = $2`,
+                [i, images.rows[i].id]
+            );
+        };
+
+        return res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('DELETE /items/:id/images/:image_id failed:', error);
+        return res.status(500).json({
+            error: 'Could not delete this image.'
+        });
     }
 });
 

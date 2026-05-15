@@ -27,7 +27,7 @@ const ItemCard = ({ items }: ItemCardProps) => {
                     <Card.Body>
                         <Card.Title>{item.title}</Card.Title>
                         <span>${item.price}</span>
-                        <Button variant="primary">Select</Button>
+                        <Button variant="primary" onClick={() => navigate(`/items/${item.id}`)}>Select</Button>
                         <Button onClick={() => 
                             navigate(`/items/${item.id}/edit`)
                         }>
