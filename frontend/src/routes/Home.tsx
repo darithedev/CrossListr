@@ -86,6 +86,7 @@ const Home = () => {
     return (
         <div className="home-container">
             <ItemCard items={items}/>
+            <button onClick={() => navigate('/items/new')}>Add New Item</button>
             <button onClick={() => handleLogout()}>Logout</button>
         </div>
     )
