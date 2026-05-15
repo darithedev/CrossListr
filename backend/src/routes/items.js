@@ -233,4 +233,64 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/:id/images', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+
+    } catch (error) {
+
+    }
+});
+
+router.post('/:id/images', authMiddleware, async(req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+        const { image_url, index_number } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        }
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            });
+        }
+
+        if (!image_url || !index_number) {
+            return res.status(400).json({
+                error: "An image url and index number is required!"
+            });
+        };
+
+        if (Number(index_number) < 0 || Number(index_number > 11)) {
+            return res.status(400).json({
+                error: 'Index must be between 0 and 11 (max 12 images).'
+            });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO item_images (item_id, image_url, index_number)
+            VALUES ($1, $2, $3)
+            RETURNING 
+                item_images.id,
+                item_images.item_id,
+                item_images.image_url,
+                item_images.index_number, 
+                item_images.created_at,
+                item_images.updated_at
+            `,
+            [id, image_url, index_number]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('POST /items/:id/images failed:', error.message);
+        res.status(500).json({ error: 'Error! Could not add image for this item.' });
+    }
+});
+
 export default router;
