@@ -28,4 +28,11 @@ routor.get('/listings', authMiddleware, async (req, res) => {
     }
 });
 
+routor.get('/:externalId/import', authMiddleware, async (req, res) => {
+    try {
+
+    } catch (error) {
+        
+    }
+});
 export default router;
