@@ -19,6 +19,16 @@ type ItemData = {
     price: number;
 };
 
+type ItemResponse = {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+    images: { url: string; index: number }[];
+}
+
 const newItem: ItemData = {
     id: "",
     item_images: [],
