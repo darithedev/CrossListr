@@ -32,6 +32,11 @@ const authHeaders = () => {
 }
 
 const ItemDetails = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [items, setItems] = useState<Item | null>(null);
+    const [isLoading, setIsLoading] = useState(true); 
 
     return (
         <>
