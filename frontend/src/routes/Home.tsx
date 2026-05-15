@@ -16,6 +16,17 @@ type Item = {
     price: number;
 };
 
+type NormalizeItem = {
+    id: string | number;
+    title: string;
+    description: string;
+    category: string;
+    condition: string;
+    price: number;
+    image_url: string | null;
+    index_number: number | null;
+};
+
 type Items = Item[];
 
 const Home = () => {
