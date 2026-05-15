@@ -297,7 +297,18 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
             });
         }
 
-        if (!image_url || !index_number) {
+        const itemCheck = await pool.query(
+            `SELECT 1 FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            })
+        }
+
+        if (!image_url || index_number === undefined || index_number === null) {
             return res.status(400).json({
                 error: "An image url and index number is required!"
             });
@@ -312,14 +323,7 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
         const result = await pool.query(
             `INSERT INTO item_images (item_id, image_url, index_number)
             VALUES ($1, $2, $3)
-            RETURNING 
-                item_images.id,
-                item_images.item_id,
-                item_images.image_url,
-                item_images.index_number, 
-                item_images.created_at,
-                item_images.updated_at
-            `,
+            RETURNING id, item_id, image_url, index_number, created_at, updated_at`,
             [id, image_url, index_number]
         );
         res.status(201).json(result.rows[0]);
