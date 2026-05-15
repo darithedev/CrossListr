@@ -307,7 +307,7 @@ const ItemForm = () => {
                 <Button type="button" variant="outline-warning" onClick={clearForm}>
                     Reset
                 </Button>
-                <Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
+                <Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
                     Back
                 </Button>
             </Form.Group>
