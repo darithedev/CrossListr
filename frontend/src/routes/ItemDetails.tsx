@@ -35,12 +35,71 @@ const ItemDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [items, setItems] = useState<Item | null>(null);
+    const [item, setItem] = useState<Item | null>(null);
     const [isLoading, setIsLoading] = useState(true); 
 
+    useEffect(() => {
+        if (!id) {
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
+
+        const loadItem = async () => {
+            try {
+                const { data } = await axios.get<ItemResponse>(
+                    `${API_URL}/v1/items/${id}`,
+                    { headers: authHeaders() }
+                );
+
+                const urls = data.images
+                    .slice()
+                    .sort((a, b) => a.index - b.index)
+                    .map((img) => img.url)
+
+                setItem({
+                    id: String(data.id),
+                    item_images: urls,
+                    title: data.title || '',
+                    description: data.description || '',
+                    category: data.category || '',
+                    condition: data.condition || '',
+                    price: Number(data.price || 0),
+                });
+            } catch (error) {
+                console.error('Failed to load item details:', error);
+                alert('Oops! Could not load item details.');
+                navigate('/home');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadItem();
+    }, [id, navigate]);
+
     return (
-        <>
-        </>
+        <div className="details-container">
+            {isLoading ? (
+                <span>Loading...</span>
+            ) :  (item && (
+                    <>
+                        <h2>{item.title}</h2>
+                        <p>Images:</p>
+                        {item.item_images?.map((url, i) => (
+                            <img key={`${i}`} src={url} alt="" />
+                        ))}
+                        <p>Description: {item.description}</p>
+                        <p>Category: {item.category}</p>
+                        <p>Condition: {item.condition}</p>
+                        <p>Price: {item.price}</p>
+                        <button onClick={() => navigate('/home')}>Back</button>
+                    </>
+                )
+                
+            )}
+        </div>
     )
 }
 export default ItemDetails;
