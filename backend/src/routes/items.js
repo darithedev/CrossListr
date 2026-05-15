@@ -26,8 +26,12 @@ router.get('/', authMiddleware, async (req, res) => {
                 items.external_id,
                 items.created_at,
                 items.updated_at,
+                item_images.image_url,
+                item_images.index_number
             FROM items
-            WHERE items.user_id = $1;`,
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.user_id = $1
+            ORDER BY items.id, item_images.index_number`,
             [userId]
         );
 
@@ -238,8 +242,40 @@ router.get('/:id/images', authMiddleware, async (req, res) => {
         const userId = req.userId;
         const { id } = req.params;
 
-    } catch (error) {
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        }
 
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            });
+        }
+
+        const itemCheck = await pool.query(
+            `SELECT 1 FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Item not found.' })
+        }
+
+        const result = await pool.query(
+            `SELECT 
+                image_url,
+                index_number AS index
+            FROM item_images
+            WHERE item_id = $1
+            ORDER BY index_number ASC`,
+            [id]
+        );
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('GET /items/:id/images failed:', error.message);
+        res.status(500).json({ error: 'Error! Could not get images for this item.' });
     }
 });
 
@@ -261,13 +297,24 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
             });
         }
 
-        if (!image_url || !index_number) {
+        const itemCheck = await pool.query(
+            `SELECT 1 FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            })
+        }
+
+        if (!image_url || index_number === undefined || index_number === null) {
             return res.status(400).json({
                 error: "An image url and index number is required!"
             });
         };
 
-        if (Number(index_number) < 0 || Number(index_number > 11)) {
+        if (Number(index_number) < 0 || Number(index_number) > 11) {
             return res.status(400).json({
                 error: 'Index must be between 0 and 11 (max 12 images).'
             });
@@ -276,14 +323,7 @@ router.post('/:id/images', authMiddleware, async(req, res) => {
         const result = await pool.query(
             `INSERT INTO item_images (item_id, image_url, index_number)
             VALUES ($1, $2, $3)
-            RETURNING 
-                item_images.id,
-                item_images.item_id,
-                item_images.image_url,
-                item_images.index_number, 
-                item_images.created_at,
-                item_images.updated_at
-            `,
+            RETURNING id, item_id, image_url, index_number, created_at, updated_at`,
             [id, image_url, index_number]
         );
         res.status(201).json(result.rows[0]);

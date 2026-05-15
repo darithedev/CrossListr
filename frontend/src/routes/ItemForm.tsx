@@ -213,7 +213,7 @@ const ItemForm = () => {
         }
     };
 
-    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             await saveItem(itemData);
@@ -307,9 +307,9 @@ const ItemForm = () => {
                 <Button type="button" variant="outline-warning" onClick={clearForm}>
                     Reset
                 </Button>
-                {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
-                Back
-            </Button>*/}
+                <Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
+                    Back
+                </Button>
             </Form.Group>
         </Form>
     )
