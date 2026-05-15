@@ -1,7 +1,10 @@
-import { useState, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 import ItemCard from '../components/ItemCard';
+import axios from 'axios'
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 type Item = {
     id: string;
@@ -28,7 +31,6 @@ const Home = () => {
     }
     return (
         <div className="home-container">
-            <h1>Hello Home Route</h1>
             <ItemCard items={items}/>
             <button onClick={() => handleLogout()}>Logout</button>
         </div>
