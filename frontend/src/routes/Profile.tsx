@@ -43,8 +43,8 @@ const Profile = () => {
                 >
                 </Form.Control>
             </Form.Group>
-            <Button onClick={() => navigate('/home')}>Home</Button>
-            <Button onClick={() => navigate('/settings')}>Settings</Button>
+            <Button type="button" onClick={() => navigate('/home')}>Home</Button>
+            <Button type="button" onClick={() => navigate('/settings')}>Settings</Button>
         </Form>
     )
 }
