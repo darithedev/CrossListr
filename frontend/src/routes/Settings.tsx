@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 const Settings = () => {
 
     const fakebayConnection = () => {
@@ -7,6 +9,10 @@ const Settings = () => {
     const faketsyConnection = () => {
 
     };
+
+    useEffect(() => {
+
+    });
 
     return (
         <div className="settings-container">
