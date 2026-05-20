@@ -68,7 +68,6 @@ services:
       FAKEBAY_REDIRECT_URI: ${FAKEBAY_REDIRECT_URI}
       FRONTEND_URL: ${FRONTEND_URL}
       FAKEBAY_AUTH_URL: http://fakebay-backend:8081
-      FAKEBAY_API_URL: http://fakebay-backend:8082
       FAKIFY_API_URL: http://fakify-backend:8080
       FAKETSY_API_URL: http://faketsy-backend:8082
     depends_on:
