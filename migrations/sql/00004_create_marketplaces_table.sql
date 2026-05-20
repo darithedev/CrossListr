@@ -1,6 +1,6 @@
 CREATE TABLE marketplaces (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(20) NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOW(),
-    updated_at TIMESTAMPTZ NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
