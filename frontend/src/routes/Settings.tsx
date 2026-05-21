@@ -11,6 +11,8 @@ const Settings = () => {
 
         const redirectUri = `${window.location.origin}/demo/oauth/callback`;
 
+        const url = new URL(authBase);
+
     };
 
     const faketsyConnection = () => {
