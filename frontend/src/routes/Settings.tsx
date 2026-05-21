@@ -12,6 +12,11 @@ const Settings = () => {
         const redirectUri = `${window.location.origin}/demo/oauth/callback`;
 
         const url = new URL(authBase);
+        url.searchParams.set('client_id', clientId);
+        url.searchParams.set('response_type', 'code');
+        url.searchParams.set('redirect_uri', redirectUri);
+        url.searchParams.set('scope', 'https://api.ebay.com/oauth/api_scope');
+        url.searchParams.set('state', 'fakebay-ui');
 
     };
 
