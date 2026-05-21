@@ -18,6 +18,7 @@ const Settings = () => {
         url.searchParams.set('scope', 'https://api.ebay.com/oauth/api_scope');
         url.searchParams.set('state', 'fakebay-ui');
 
+        window.location.assign(url.toString());
     };
 
     const faketsyConnection = () => {
