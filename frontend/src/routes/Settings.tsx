@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 
+const FAKEBAY_URL = import.meta.env.VITE_FAKEBAY_AUTH_PUBLIC_URL;
+
 const Settings = () => {
 
     const fakebayConnection = () => {
