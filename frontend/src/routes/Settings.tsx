@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const FAKEBAY_URL = import.meta.env.VITE_FAKEBAY_AUTH_PUBLIC_URL;
 
 const Settings = () => {
-
+    const navigate = useNavigate();
+    
     const fakebayConnection = () => {
         const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client';
 
@@ -36,6 +38,7 @@ const Settings = () => {
                 <h3>Integration</h3>
                 <button type="button" onClick={fakebayConnection}>Connect to Fakebay</button>
                 <button type="button" onClick={faketsyConnection}>Connect to Faketsy</button>
+                <button type="button" onClick={() => navigate('/profile')}>Back</button>
             </div>
         </div>
     )
