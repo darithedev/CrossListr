@@ -5,6 +5,11 @@ const FAKEBAY_URL = import.meta.env.VITE_FAKEBAY_AUTH_PUBLIC_URL;
 const Settings = () => {
 
     const fakebayConnection = () => {
+        const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client';
+
+        const authBase = `${FAKEBAY_URL}/oauth2/authorize`;
+
+        const redirectUri = `${window.location.origin}/demo/oauth/callback`;
 
     };
 
