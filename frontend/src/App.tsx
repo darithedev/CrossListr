@@ -19,6 +19,7 @@ function App() {
         <Route path="/items/new" element={<ItemForm />} />
         <Route path="/items/:id/edit" element={<ItemForm />} />
         <Route path="/items/:id" element={<ItemDetails />} />
+        <Route path="/demo/oauth/callback" element={<Settings />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/signup" replace />} />
