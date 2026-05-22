@@ -35,7 +35,7 @@ const Settings = () => {
         if (!token) {
             return
         }
-        
+
         const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client';
 
         const authBase = `${FAKEBAY_URL}/oauth2/authorize`;
@@ -61,7 +61,11 @@ const Settings = () => {
             <h1>Settings</h1>
             <div className="integration">
                 <h3>Integration</h3>
-                <button type="button" onClick={fakebayConnection}>Connect to Fakebay</button>
+                {fakebayConnected ? (
+                    <button type="button" disabled>Connected to Fakebay</button>
+                ) : (
+                    <button type="button" onClick={fakebayConnection}>Connect to Fakebay</button>
+                )}
                 <button type="button" onClick={faketsyConnection}>Connect to Faketsy</button>
                 <button type="button" onClick={() => navigate('/profile')}>Back</button>
             </div>
