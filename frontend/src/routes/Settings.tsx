@@ -40,7 +40,7 @@ const Settings = () => {
 
         const authBase = `${FAKEBAY_URL}/oauth2/authorize`;
 
-        const redirectUri = `${window.location.origin}/demo/oauth/callback`;
+        const redirectUri = `${API_URL}/v1/connections/fakebay/callback`;
 
         const url = new URL(authBase);
         url.searchParams.set('client_id', clientId);
