@@ -32,6 +32,10 @@ const Settings = () => {
     }, [navigate]);
     
     const fakebayConnection = () => {
+        if (!token) {
+            return
+        }
+        
         const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client';
 
         const authBase = `${FAKEBAY_URL}/oauth2/authorize`;
@@ -43,7 +47,7 @@ const Settings = () => {
         url.searchParams.set('response_type', 'code');
         url.searchParams.set('redirect_uri', redirectUri);
         url.searchParams.set('scope', 'https://api.ebay.com/oauth/api_scope');
-        url.searchParams.set('state', 'fakebay-ui');
+        url.searchParams.set('state', token ?? '');
 
         window.location.assign(url.toString());
     };
