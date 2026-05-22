@@ -8,6 +8,28 @@ const FAKEBAY_URL = import.meta.env.VITE_FAKEBAY_AUTH_PUBLIC_URL;
 const Settings = () => {
     const navigate = useNavigate();
     const [fakebayConnected, setFakebayConnected] = useState(false);
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        const getConnections = async () => {
+            try {
+
+                if (!token) {
+                    return
+                }
+
+                const { data } = await axios.get(`${API_URL}/v1/connections`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const marketplaces = data.map((m: { name: string }) => m.name);
+                setFakebayConnected(marketplaces.includes('fakebay'));
+            } catch (error) {
+                console.error('Failled to load connections:', error);
+            }
+        };
+        getConnections();
+    }, [navigate]);
     
     const fakebayConnection = () => {
         const clientId = import.meta.env.VITE_FAKEBAY_CLIENT_ID ?? 'dev-fakebay-client';
@@ -29,10 +51,6 @@ const Settings = () => {
     const faketsyConnection = () => {
 
     };
-
-    useEffect(() => {
-
-    });
 
     return (
         <div className="settings-container">
