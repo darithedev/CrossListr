@@ -79,6 +79,10 @@ const ItemDetails = () => {
         loadItem();
     }, [id, navigate]);
 
+    const crosslist = (marketplace: String) => {
+
+    }
+
     return (
         <div className="details-container">
             {isLoading ? (
@@ -94,10 +98,10 @@ const ItemDetails = () => {
                         <p>Category: {item.category}</p>
                         <p>Condition: {item.condition}</p>
                         <p>Price: {item.price}</p>
+                        <button onClick={() => crosslist('fakebay')}>Crosslist to Fakebay</button>
                         <button onClick={() => navigate('/home')}>Back</button>
                     </>
                 )
-                
             )}
         </div>
     )
