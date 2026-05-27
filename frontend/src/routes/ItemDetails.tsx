@@ -88,6 +88,25 @@ const ItemDetails = () => {
         loadItem();
     }, [id, navigate]);
 
+    useEffect(() => {
+        const getConnections = async () => {
+            try {
+                if (!localStorage.getItem('token')) return;
+
+                const { data } = await axios.get(
+                    `${API_URL}/v1/connections`, 
+                    { headers: authHeaders() }
+                );
+
+                const connectedMarketplaces = data.map((mp: {name: string}) => mp.name);
+                setConnections(connectedMarketplaces);
+            } catch (error) {
+                console.error('Failed to load connected marketplaces:', error);
+            }
+        };
+        getConnections();
+    }, []);
+
     const crosslist = (marketplace: String) => {
 
     }
