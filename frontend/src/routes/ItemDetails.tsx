@@ -42,7 +42,10 @@ const ItemDetails = () => {
     const navigate = useNavigate();
 
     const [item, setItem] = useState<Item | null>(null);
-    const [isLoading, setIsLoading] = useState(true); 
+    const [isLoading, setIsLoading] = useState(true);
+
+    const marketplaces = ['fakebay', 'faketsy', 'fakify'];
+    const [connections, setConnections] = useState<string[]>([]);
 
     useEffect(() => {
         if (!id) {
