@@ -442,4 +442,12 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
+    try {
+
+    } catch (error) {
+
+    }
+});
+
 export default router;
