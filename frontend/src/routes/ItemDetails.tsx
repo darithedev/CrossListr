@@ -107,8 +107,17 @@ const ItemDetails = () => {
         getConnections();
     }, []);
 
-    const crosslist = (marketplace: String) => {
+    const crosslist = async (marketplace: string) => {
+        try {
+            if (!id || !connections.includes(marketplace)) return;
 
+            const { data } = await axios.post(
+                `${API_URL}/v1/items/${id}/crosslist/${marketplace}`,
+                { authHeaders }
+            )
+        } catch (error) {
+            console.error('Failed to crosslist listing:', error);
+        }
     }
 
     return (
