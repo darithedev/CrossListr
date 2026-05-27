@@ -22,14 +22,20 @@ type ItemResponse = {
     condition: string;
     price: number;
     images: { image_id: number; url: string; index: number }[];
-}
+};
+
+type ItemListing = {
+    marketplace: string;
+    status: string;
+    external_id: string | null;
+};
 
 // Likely move to /helper dir
 const authHeaders = () => {
     const token = localStorage.getItem('token')
     if (!token) return {}
     return { Authorization: `Bearer ${token}` }
-}
+};
 
 const ItemDetails = () => {
     const { id } = useParams();
