@@ -448,7 +448,10 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
         const { id, marketplace } = req.params;
 
     } catch (error) {
-
+        console.error('POST /items/:id/crosslist/:marketplace failed:', error);
+        return res.status(500).json({
+            error: 'Error! Could not crosslist this item.'
+        });
     }
 });
 
