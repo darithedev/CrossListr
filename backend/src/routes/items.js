@@ -444,6 +444,8 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
 
 router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
     try {
+        const userId = req.userId;
+        const { id, marketplace } = req.params;
 
     } catch (error) {
 
