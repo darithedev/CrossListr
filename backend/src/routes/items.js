@@ -4,6 +4,8 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const marketplaces = ['fakebay', 'faketsy', 'fakify'];
+
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -447,6 +449,23 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
         const userId = req.userId;
         const { id, marketplace } = req.params;
 
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } 
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            });
+        }
+
+        if (!marketplaces.includes(marketplace)) {
+            return res.status(400).json({
+                error: 'Invalid marketplace name.'
+            });
+        }
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
