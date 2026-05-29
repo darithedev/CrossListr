@@ -447,7 +447,20 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
 
 router.get('/:id/listings', authMiddleware, async (req, res) => {
     try {
-        
+        const userId = req.userId;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } 
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'invalid item id.'
+            });
+        }
     } catch (error) {
         
     }
