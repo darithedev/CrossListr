@@ -36,7 +36,7 @@ const ItemCard = ({ items }: ItemCardProps) => {
                             <span>${item.price}</span>
                             <Button 
                                 className="edit-button"
-                                
+                                variant="outline-primary"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/items/${item.id}/edit`)

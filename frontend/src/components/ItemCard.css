@@ -22,6 +22,9 @@
     flex-direction: row;
     align-items: center;
     gap: 5rem;
+    color: #1E3F74;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
 .card-container .image-icon {
@@ -42,4 +45,19 @@
 
 .card-container .edit-button {
     margin-left: auto;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    background-color: #ffffff;
+    color: #2099A9;
+    border: 2px solid #2099A9;
+    border-radius: 0.5rem;
+}
+.card-container .edit-button.btn:hover {
+    background-color: #2099A9;
+    color: #ffffff;
+    border-color: #2099A9;
+    opacity: 0.92;
+    box-shadow: 0 4px 12px rgba(32, 153, 169, 0.25);
 }
