@@ -569,6 +569,23 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
                 error: `Crosslisting to marketplace ${marketplace} is not yet available.`,
             });
         }
+
+        await pool.query(
+            `INSERT INTO listings (item_id, marketplace_id, status, external_id)
+            VALUES ($1, $2, $3, $4)`,
+            [id, marketplace_id, 'listed', externalId]
+        );
+
+        await pool.query(
+            `UPDATE items SET status = 'listed', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        );
+
+        return res.status(200).json({
+            marketplace,
+            status: 'listed',
+            external_id: externalId,
+        });
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
