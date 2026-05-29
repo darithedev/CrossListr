@@ -110,6 +110,23 @@ const ItemDetails = () => {
         getConnections();
     }, []);
 
+    useEffect(() => {
+        if (!id) return;
+
+        const getListings = async () => {
+            try {
+                const { data } = await axios.get<ItemListing[]>(
+                    `${API_URL}/v1/items/${id}/listings`,
+                    { headers: authHeaders() }
+                );
+                setListings(data);
+            } catch (error) {
+                console.error('Failed to load listings:', error);
+            }
+        };
+        getListings();
+    }, [id]);
+
     const crosslist = async (marketplace: string) => {
         try {
             if (!id || !connections.includes(marketplace)) return;
