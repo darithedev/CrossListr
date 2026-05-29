@@ -1,6 +1,7 @@
 import express from 'express'
 import pool from '../db/pools.js'
 import authMiddleware from '../middleware/authMiddleware.js';
+import { getFakebayAccessToken } from '../services/marketplaceTokens.js';
 
 const router = express.Router();
 
@@ -521,25 +522,18 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
             });
         }
 
-        const connection = await pool.query(
-            `SELECT marketplace_connections.access_token, marketplaces.id AS marketplace_id
-            FROM marketplace_connections
-            JOIN marketplaces ON marketplaces.id = marketplace_connections.marketplace_id
-            WHERE marketplace_connections.user_id = $1 AND marketplaces.name = $2`,
-            [userId, marketplace]
-        );
-
-        if (connection.rows.length === 0) {
-            return res.status(403).json({
-                error: 'Marketplace is not connected.'
-            });
-        }
-
-        const { access_token, marketplace_id } = connection.rows[0];
-
-        let externalId;
-
         if (marketplace === 'fakebay') {
+
+            const connection = await getFakebayAccessToken(userId);
+
+            if (!connection) {
+                return res.status(403).json({
+                    error: "Marketplace is not connected."
+                });
+            }
+
+            const { access_token, marketplace_id } = connection;
+
             const response = await fetch(`http://fakebay-backend:8082/api/v1/seller/listings`, {
                 method: 'POST',
                 headers: {
@@ -563,28 +557,36 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
                 });
             }
 
-            externalId = String(data.id);
-        } else {
+            const externalId = String(data.id);
+
+            await pool.query(
+                `INSERT INTO listings (item_id, marketplace_id, status, external_id)
+                VALUES ($1, $2, $3, $4)`,
+                [id, marketplace_id, 'listed', externalId]
+            );
+
+            await pool.query(
+                `UPDATE items SET status = 'listed', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+                [id, userId]
+            );
+
+            return res.status(200).json({
+                marketplace,
+                status: 'listed',
+                external_id: externalId,
+            });
+        } else if (marketplace === 'faketsy') {
             return res.status(501).json({
-                error: `Crosslisting to marketplace ${marketplace} is not yet available.`,
+                error: 'Crosslisting to Faketsy is not yet available.',
+            });
+        } else if (marketplace === 'fakify') {
+            return res.status(501).json({
+                error: 'Crosslisting to Fakify is not yet available.',
             });
         }
 
-        await pool.query(
-            `INSERT INTO listings (item_id, marketplace_id, status, external_id)
-            VALUES ($1, $2, $3, $4)`,
-            [id, marketplace_id, 'listed', externalId]
-        );
-
-        await pool.query(
-            `UPDATE items SET status = 'listed', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
-            [id, userId]
-        );
-
-        return res.status(200).json({
-            marketplace,
-            status: 'listed',
-            external_id: externalId,
+        return res.status(501).json({
+            error: `Crosslisting to marketplace ${marketplace} is not yet available.`,
         });
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
