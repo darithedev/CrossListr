@@ -534,6 +534,10 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
                 error: 'Marketplace is not connected.'
             });
         }
+
+        const { access_token, marketplace_id } = connection.rows[0];
+
+        let externalId;
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
