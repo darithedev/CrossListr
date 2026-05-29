@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 import ItemCard from '../components/ItemCard';
 import axios from 'axios'
+import './Home.css'
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -85,10 +86,29 @@ const Home = () => {
     }
     return (
         <div className="home-container">
-            <button onClick={() => navigate('/profile')}>Profile</button>
+            <div className="home-button-section">
+                <button 
+                    onClick={() => navigate('/profile')}
+                    className="home-button"
+                >
+                    Profile
+                </button>
+                <button 
+                    onClick={() => handleLogout()}
+                    className="home-button"
+                >
+                    Logout
+                </button>
+            </div>
+            
             <ItemCard items={items}/>
-            <button onClick={() => navigate('/items/new')}>Add New Item</button>
-            <button onClick={() => handleLogout()}>Logout</button>
+
+            <button 
+                onClick={() => navigate('/items/new')}
+                className="home-button add-item-button"
+            >
+                Add New Item
+            </button>
         </div>
     )
 };
