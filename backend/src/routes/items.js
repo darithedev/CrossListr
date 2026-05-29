@@ -515,6 +515,12 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
             status: rowObj.status
         };
 
+        if (listing.status === 'listed') {
+            return res.status(409).json({
+                error: 'This item is already listed.',
+            });
+        }
+
         const connection = await pool.query(
             `SELECT marketplace_connections.access_token, marketplaces.id AS marketplace_id
             FROM marketplace_connections
