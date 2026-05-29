@@ -472,6 +472,20 @@ router.get('/:id/listings', authMiddleware, async (req, res) => {
                 error: "Item not found for this user."
             });
         }
+
+        const result = await pool.query(
+            `SELECT 
+                marketplaces.name AS marketplace,
+                listings.status,
+                listings.external_id
+            FROM listings
+            JOIN marketplaces ON marketplaces.id = listings.marketplace_id
+            JOIN items ON items.id = listings.item_id
+            WHERE listings.item_id = $1 AND items.user_id = $2`,
+            [id, userId]
+        );
+
+        return res.status(200).json(result.rows);
     } catch (error) {
         console.error('GET /items/:id/listings:', error);
         return res.status(500).json({
