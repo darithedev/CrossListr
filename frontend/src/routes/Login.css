@@ -1,0 +1,77 @@
+.login-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 5rem auto 0;
+}
+
+.login-form label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0.9rem 0 0.4rem 0;
+    text-align: left;
+    color: #1E3F74;
+}
+
+.login-form input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem 1rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+    border-radius: 0.5rem;
+    background-color: #F6F7F9;
+}
+
+.login-form input::placeholder {
+    color:#1E3F74;
+    opacity: 0.8;
+}
+
+.login-form .app-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1E3F74;
+}
+
+.login-form .welcome-header {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin-top: 1.5rem;
+}
+
+.login-form .login-description {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #5A6B7D;
+    margin: 0.5rem 0 1.5rem 0;
+}
+
+.login-form .login-button {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2rem 0 2rem 0;
+    padding: 1rem;
+    background-color: #2099A9;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.login-form .login-button:hover {
+    opacity: 0.92;
+    box-shadow: 0 4px 12px rgba(32, 153, 169, 0.25);
+}
+
+.login-form .signup-button {
+    font-weight: 600;
+    color: #2099A9;
+    text-decoration: none;
+}
+
+.login-form .signup-button:hover {
+    text-decoration: underline;
+}

@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react'
 import { Form, Button } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { UserContext } from '../context/UserContext'
+import './Login.css'
 
 const Login = () => {
     const navigate = useNavigate();
@@ -75,9 +76,11 @@ const Login = () => {
             className="login-form"
             onSubmit={handleSubmit}
         >
-            <h1>Log In</h1>
+            <span className="app-name">CrossListr</span>
+            <h2 className="welcome-header">Welcome Back</h2>
+            <p className="login-description">Login to manage your inventory and listings</p>
             <Form.Group controlId="email">
-                <Form.Label>Email: </Form.Label>
+                <Form.Label>Email Address</Form.Label>
                 <Form.Control
                     type="email"
                     value={loginData.email}
@@ -87,7 +90,7 @@ const Login = () => {
                 />
             </Form.Group>
             <Form.Group controlId="password">
-                <Form.Label>Password: </Form.Label>
+                <Form.Label>Password</Form.Label>
                 <Form.Control
                     type="password"
                     placeholder="Password"
@@ -96,18 +99,12 @@ const Login = () => {
                     onChange={handlePassword}
                 />
             </Form.Group>
-            <Button type="submit" variant="outline-success">
+            <Button type="submit" variant="outline-success" className="login-button">
                 Log In
             </Button>
-            <Button type="button" variant="outline-warning" onClick={clearLogin}>
-                Reset
-            </Button>
-            <Button type="button" variant="outline-warning" onClick={() => navigate("/signup")}>
-                No Account? Sign up for free!
-            </Button>
-            {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
-                Back
-            </Button>*/}
+            <Link to="/signup" className="signup-button">
+                Don't have an Account? Sign up for free!
+            </Link>
         </Form>
     )
 }
