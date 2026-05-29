@@ -461,6 +461,17 @@ router.get('/:id/listings', authMiddleware, async (req, res) => {
                 error: 'invalid item id.'
             });
         }
+
+        const itemCheck = await pool.query(
+            `SELECT id, status FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            });
+        }
     } catch (error) {
         console.error('GET /items/:id/listings:', error);
         return res.status(500).json({
