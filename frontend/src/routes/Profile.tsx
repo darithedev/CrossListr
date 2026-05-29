@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap'
 import { UserContext } from '../context/UserContext';
+import './Profile.css'
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -9,7 +10,7 @@ const Profile = () => {
 
     return (
         <Form className="profile-form">
-            <h1>Profile</h1>
+            <h1 className="profile-header">Profile</h1>
 
             <Form.Group controlId="name">
                 <Form.Label>Name:</Form.Label>
@@ -43,8 +44,16 @@ const Profile = () => {
                 >
                 </Form.Control>
             </Form.Group>
-            <Button type="button" onClick={() => navigate('/home')}>Home</Button>
-            <Button type="button" onClick={() => navigate('/settings')}>Settings</Button>
+            <div className="profile-button-section">
+                <Button type="button" className="profile-button" onClick={() => navigate('/home')}>Home</Button>
+                <Button 
+                    type="button"
+                    className="profile-button profile-button-secondary"
+                    onClick={() => navigate('/settings')}
+                >
+                    Settings
+                </Button>
+            </div>
         </Form>
     )
 }
