@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from "react-router-dom";
 import axios from 'axios'
+import Tag from '../components/Tag';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -158,6 +159,12 @@ const ItemDetails = () => {
         }
     }
 
+    const fakebayExternalId = listings.find((listing) =>
+        listing.marketplace === 'fakebay' &&
+        listing.status === 'listed' &&
+        listing.external_id
+    )?.external_id ?? null;
+
     return (
         <div className="details-container">
             {isLoading ? (
@@ -173,7 +180,47 @@ const ItemDetails = () => {
                         <p>Category: {item.category}</p>
                         <p>Condition: {item.condition}</p>
                         <p>Price: {item.price}</p>
-                        <button onClick={() => crosslist('fakebay')}>Crosslist to Fakebay</button>
+
+                        <h3>List on marketplaces</h3>
+                        {marketplaces.map((marketplace) => {
+                            const marketplaceName = marketplace.charAt(0).toUpperCase() + marketplace.slice(1);
+                            const isConnected = connections.includes(marketplace);
+                            const externalId = marketplace === 'fakebay' ? fakebayExternalId : null;
+
+                            if (!isConnected) {
+                                return (
+                                    <button
+                                        key={marketplaceName}
+                                        type="button"
+                                        onClick={() => navigate('/settings')}
+                                    >
+                                        Connect {marketplaceName}
+                                    </button>
+                                );
+                            }
+
+                            if (externalId) {
+                                return (
+                                    <div>
+                                        <Tag tag={marketplaceName} category={'marketplace'}/>
+                                        <Tag tag={'active'} category={'status'} />
+                                        <span>Id: {externalId}</span>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <button
+                                    key={marketplace}
+                                    type="button"
+                                    onClick={() => crosslist(marketplace)}
+                                    disabled={isCrosslisting}
+                                >
+                                    {isCrosslisting ? 'Listing...' : `Crosslist to ${marketplaceName}`}
+                                </button>
+                            );
+                        })}
+
                         <button onClick={() => navigate('/home')}>Back</button>
                     </>
                 )
