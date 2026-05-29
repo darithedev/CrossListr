@@ -60,7 +60,6 @@ const Login = () => {
             if (response.status === 200) {
                 const { token, user } = response.data as AuthResponse;
                 clearLogin();
-                alert("Sucessfully logged in!");
                 auth.login(token, user);
                 navigate('/home');
             }
