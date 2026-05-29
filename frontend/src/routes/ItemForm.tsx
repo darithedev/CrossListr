@@ -58,7 +58,6 @@ type CloudinaryInfo = {
     info: CloudinaryPayload;
 };
 
-// Likely move to /helper dir
 const authHeaders = () => {
     const token = localStorage.getItem('token')
     if (!token) return {}

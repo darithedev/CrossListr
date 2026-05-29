@@ -32,7 +32,6 @@ type ItemListing = {
     external_id: string | null;
 };
 
-// Likely move to /helper dir
 const authHeaders = () => {
     const token = localStorage.getItem('token')
     if (!token) return {}
