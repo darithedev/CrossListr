@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Form, Button } from 'react-bootstrap'
 import axios from 'axios'
+import './ItemForm.css'
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -299,21 +300,28 @@ const ItemForm = () => {
 
     return (
         <Form className="form-item" onSubmit={handleSubmit}>
-            <h2>{!isEditing ? 'New Item' : 'Edit Item'}</h2>
+            <h2 className="form-item-header">{!isEditing ? 'New Item' : 'Edit Item'}</h2>
 
             <Form.Group controlId="images">
                 <div className="upload-box">
                     {itemData.item_images.map((img, index) => (
-                        <div key={`${index}`}>
+                        <div key={`${index}`} className="upload-thumb">
                             <img src={img.url} alt=""/>
-                            <button type="button" onClick={() => handleRemoveImage(index)}>x</button>
+                            <button 
+                                type="button"
+                                className="remove-image"
+                                onClick={() => handleRemoveImage(index)}
+                                >
+                                    x
+                                </button>
                         </div>
                     ))}
                 </div>
-                <p>Photos: {itemData.item_images.length}/{MAX_IMAGES}</p>
+                <p className="image-max">Photos: {itemData.item_images.length}/{MAX_IMAGES}</p>
                 <Button
                     type="button"
                     variant="outline-primary"
+                    className="form-item-button form-item-button-secondary"
                     onClick={() => cloudinaryRef.current?.open()}
                 >
                     Add photos
@@ -334,6 +342,8 @@ const ItemForm = () => {
             <Form.Group controlId="description">
                 <Form.Label>Description:</Form.Label>
                 <Form.Control
+                    as="textarea"
+                    rows={5}
                     type="text"
                     placeholder="Describe this item"
                     required
@@ -370,17 +380,36 @@ const ItemForm = () => {
                 />
             </Form.Group>
 
-            <Form.Group>
-                <Button type="button" variant="outline-success" onClick={() => saveItem(itemData)}>
+            <Form.Group className="form-button-section">
+                <Button 
+                    type="button" 
+                    variant="outline-success"
+                    className="form-item-button form-item-button-secondary"
+                    onClick={() => saveItem(itemData)}
+                >
                     Save draft
                 </Button>
-                <Button type="submit" variant="outline-success">
+                <Button 
+                    type="submit"
+                    variant="outline-success"
+                    className="form-item-button form-item-button-primary"
+                >
                     Submit
                 </Button>
-                <Button type="button" variant="outline-warning" onClick={clearForm}>
+                <Button 
+                    type="button"
+                    variant="outline-warning"
+                    className="form-item-button form-item-button-secondary"
+                    onClick={clearForm}
+                >
                     Reset
                 </Button>
-                <Button type="button" variant="outline-warning" onClick={() => navigate("/home")}>
+                <Button 
+                    type="button"
+                    variant="outline-warning"
+                    className="form-item-button form-item-button-secondary"
+                    onClick={() => navigate("/home")}
+                >
                     Back
                 </Button>
             </Form.Group>
