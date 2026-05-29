@@ -466,6 +466,26 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
                 error: 'Invalid marketplace name.'
             });
         }
+
+        // Checks if item is owned by user and select required fields for listing
+        const itemCheck = await pool.query(
+            `SELECT
+                items.id,
+                items.title, 
+                items.description, 
+                items.category, 
+                items.condition, 
+                items.price,
+                items.status,
+                item_images.id AS image_id,
+                item_images.image_url,
+                item_images.index_number
+            FROM items 
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.id = $1 AND items.user_id = $2
+            ORDER BY item_images.index_number ASC`,
+            [id, userId]
+        );
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
