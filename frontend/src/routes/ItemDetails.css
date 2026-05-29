@@ -1,0 +1,144 @@
+.details-container {
+    width: 100%;
+    max-width: 720px;
+    margin: 2rem auto 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.details-header {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin: 0 0 1.5rem 0;
+}
+
+.details-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+.details-loading {
+    font-size: 1rem;
+    color: #5A6B7D;
+}
+
+.details-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1E3F74;
+    margin: 0 0 0.4rem 0;
+}
+
+.details-field {
+    font-size: 1rem;
+    color: #5A6B7D;
+    margin: 0.75rem 0;
+    line-height: 1.45;
+}
+
+.details-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin: 1rem 0;
+}
+
+.details-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+    border-radius: 0.5rem;
+    background-color: #F6F7F9;
+}
+
+.details-images img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+}
+
+.details-marketplace-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.details-marketplace-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+    border-radius: 0.5rem;
+    background-color: #F6F7F9;
+}
+
+.details-marketplace-row .marketplace,
+.details-marketplace-row .status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.5rem;
+}
+
+.details-marketplace-row .marketplace {
+    background-color: #2099A9;
+    color: #ffffff;
+}
+
+.details-marketplace-row .status {
+    background-color: #ffffff;
+    color: #1E3F74;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+}
+
+.details-external-id {
+    font-size: 0.9rem;
+    color: #5A6B7D;
+}
+
+.details-button {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    background-color: #2099A9;
+    color: #ffffff;
+    border: none;
+}
+
+.details-button:hover:not(:disabled) {
+    opacity: 0.92;
+    box-shadow: 0 4px 12px rgba(32, 153, 169, 0.25);
+}
+
+.details-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.details-button-secondary {
+    background-color: #ffffff;
+    color: #2099A9;
+    border: 2px solid #2099A9;
+}
+
+.details-button-secondary:hover:not(:disabled) {
+    background-color: #2099A9;
+    color: #ffffff;
+}
+
+.details-back-section {
+    margin-top: 1.5rem;
+}

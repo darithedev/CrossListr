@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from "react-router-dom";
 import axios from 'axios'
 import Tag from '../components/Tag';
+import './ItemDetails.css'
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -168,60 +169,86 @@ const ItemDetails = () => {
     return (
         <div className="details-container">
             {isLoading ? (
-                <span>Loading...</span>
+                <p className="details-loading">Loading...</p>
             ) :  (item && (
                     <>
-                        <h2>{item.title}</h2>
-                        <p>Images:</p>
-                        {item.item_images?.map((url, i) => (
-                            <img key={`${i}`} src={url} alt="" />
-                        ))}
-                        <p>Description: {item.description}</p>
-                        <p>Category: {item.category}</p>
-                        <p>Condition: {item.condition}</p>
-                        <p>Price: {item.price}</p>
+                        <h2 className="details-header">{item.title}</h2>
+                        <section className="details-images-section">
+                            <p className="details-label">Images</p>
+                            <div className="details-images">
+                                {item.item_images?.map((url, i) => (
+                                    <img key={`${i}`} src={url} alt="" />
+                                ))}
+                            </div>
+                        </section>
+                        
+                        <p className="details-field">
+                            <span className="details-label">Description</span> 
+                            {item.description}
+                        </p>
+                        <p className="details-field">
+                            <span className="details-label">Category</span>
+                            {item.category}
+                        </p>
+                        <p className="details-field">
+                            <span className="details-label">Condition</span>
+                            {item.condition}
+                        </p>
+                        <p className="details-price">${item.price}</p>
+                        
+                        <section className="details-marketplace-section">
+                            <h3 className="details-section-title">List on marketplaces</h3>
+                            {marketplaces.map((marketplace) => {
+                                const marketplaceName = marketplace.charAt(0).toUpperCase() + marketplace.slice(1);
+                                const isConnected = connections.includes(marketplace);
+                                const externalId = marketplace === 'fakebay' ? fakebayExternalId : null;
 
-                        <h3>List on marketplaces</h3>
-                        {marketplaces.map((marketplace) => {
-                            const marketplaceName = marketplace.charAt(0).toUpperCase() + marketplace.slice(1);
-                            const isConnected = connections.includes(marketplace);
-                            const externalId = marketplace === 'fakebay' ? fakebayExternalId : null;
+                                if (!isConnected) {
+                                    return (
+                                        <button
+                                            key={marketplaceName}
+                                            type="button"
+                                            className="details-button details-button-secondary"
+                                            onClick={() => navigate('/settings')}
+                                        >
+                                            Connect {marketplaceName}
+                                        </button>
+                                    );
+                                }
 
-                            if (!isConnected) {
+                                if (externalId) {
+                                    return (
+                                        <div key={marketplace} className="details-marketplace-row">
+                                            <Tag tag={marketplaceName} category={'marketplace'}/>
+                                            <Tag tag={'active'} category={'status'} />
+                                            <span className="details-external-id">Id: {externalId}</span>
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <button
-                                        key={marketplaceName}
+                                        key={marketplace}
                                         type="button"
-                                        onClick={() => navigate('/settings')}
+                                        className="details-button"
+                                        onClick={() => crosslist(marketplace)}
+                                        disabled={isCrosslisting}
                                     >
-                                        Connect {marketplaceName}
+                                        {isCrosslisting ? 'Listing...' : `Crosslist to ${marketplaceName}`}
                                     </button>
                                 );
-                            }
-
-                            if (externalId) {
-                                return (
-                                    <div key={marketplace}>
-                                        <Tag tag={marketplaceName} category={'marketplace'}/>
-                                        <Tag tag={'active'} category={'status'} />
-                                        <span>Id: {externalId}</span>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <button
-                                    key={marketplace}
-                                    type="button"
-                                    onClick={() => crosslist(marketplace)}
-                                    disabled={isCrosslisting}
-                                >
-                                    {isCrosslisting ? 'Listing...' : `Crosslist to ${marketplaceName}`}
-                                </button>
-                            );
-                        })}
-
-                        <button onClick={() => navigate('/home')}>Back</button>
+                            })}
+                        </section>
+                        
+                        <div className="details-back-section">
+                            <button 
+                                type="button"
+                                className="details-button details-button-secondary"
+                                onClick={() => navigate('/home')}
+                            >
+                                Back
+                            </button>
+                        </div>
                     </>
                 )
             )}
