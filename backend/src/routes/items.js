@@ -445,6 +445,14 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/:id/listings', authMiddleware, async (req, res) => {
+    try {
+        
+    } catch (error) {
+        
+    }
+});
+
 router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
