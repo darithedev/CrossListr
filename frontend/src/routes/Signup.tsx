@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react'
 import { Form, Button } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { UserContext } from '../context/UserContext'
+import './Signup.css'
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -75,25 +76,25 @@ const Signup = () => {
             if (response.status === 200) {
                 const { token, user } = response.data as AuthResponse;
                 clearLogin();
-                alert("Sucessfully signed up!")
                 auth.login(token, user);
                 navigate('/home');
             }
 
         } catch (error: unknown) {
-            alert("Somethingwent wrong. Please Try Again");
+            alert("Something went wrong. Please Try Again");
             console.error(error);
         }
     };
 
     return (
         <Form 
-            className="singup-form"
+            className="signup-form"
             onSubmit={handleSubmit}
         >
-            <h1>Enter Your Personal Information</h1>
+            <span className="app-name">CrossListr</span>
+            <h2 className="signup-header">Create Your Account</h2>
             <Form.Group controlId="name">
-                <Form.Label>Full Name: </Form.Label>
+                <Form.Label>Full Name</Form.Label>
                 <Form.Control
                     type="text"
                     value={signupData.name}
@@ -103,7 +104,11 @@ const Signup = () => {
                 />
             </Form.Group>
             <Form.Group controlId="phone_number">
-                <Form.Label>Phone Number: </Form.Label>
+                <Form.Label>
+                    Phone Number
+                    <span className="optional-text"> (Optional)</span>
+                </Form.Label>
+                
                 <Form.Control
                     type="tel"
                     value={signupData.phone_number}
@@ -113,7 +118,7 @@ const Signup = () => {
                 />
             </Form.Group>
             <Form.Group controlId="email">
-                <Form.Label>Email: </Form.Label>
+                <Form.Label>Email Address</Form.Label>
                 <Form.Control
                     type="email"
                     value={signupData.email}
@@ -123,7 +128,7 @@ const Signup = () => {
                 />
             </Form.Group>
             <Form.Group controlId="password">
-                <Form.Label>Password: </Form.Label>
+                <Form.Label>Password</Form.Label>
                 <Form.Control
                     type="password"
                     placeholder="Password"
@@ -132,18 +137,12 @@ const Signup = () => {
                     onChange={handlePassword}
                 />
             </Form.Group>
-            <Button type="submit" variant="outline-success">
+            <Button type="submit" variant="outline-success" className="signup-button">
                 Sign Up
             </Button>
-            <Button type="button" variant="outline-warning" onClick={clearLogin}>
-                Reset
-            </Button>
-            <Button type="button" variant="outline-warning" onClick={() => navigate("/login")}>
+            <Link to="/login" className="login-link">
                 Already signed up? Login here
-            </Button>
-            {/*<Button type="button" variant="outline-warning" onClick={() => navigate("/")}>
-                Back
-            </Button>*/}
+            </Link>
         </Form>
     )
 }

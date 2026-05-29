@@ -1,0 +1,81 @@
+.signup-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 5rem auto 0;
+}
+
+.signup-form label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0.9rem 0 0.4rem 0;
+    text-align: left;
+    color: #1E3F74;
+}
+
+.signup-form input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem 1rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+    border-radius: 0.5rem;
+    background-color: #F6F7F9;
+}
+
+.signup-form input::placeholder {
+    color: #1E3F74;
+    opacity: 0.8;
+}
+
+.signup-form .optional-text {
+    color: #5A6B7D;
+}
+
+.signup-form .app-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1E3F74;
+}
+
+.signup-form .signup-header {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin-top: 1.5rem;
+}
+
+.signup-form .signup-button {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2rem 0 1rem 0;
+    padding: 1rem;
+    background-color: #2099A9;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.signup-form .signup-button:hover {
+    opacity: 0.92;
+    box-shadow: 0 4px 12px rgba(32, 153, 169, 0.25);
+}
+
+.signup-form .login-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-weight: 600;
+    color: #2099A9;
+    text-decoration: none;
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.signup-form .login-link:hover {
+    text-decoration: underline;
+}
