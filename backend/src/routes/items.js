@@ -514,6 +514,20 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
             price: rowObj.price,
             status: rowObj.status
         };
+
+        const connection = await pool.query(
+            `SELECT marketplace_connections.access_token, marketplaces.id AS marketplace_id
+            FROM marketplace_connections
+            JOIN marketplaces ON marketplaces.id = marketplace_connections.marketplace_id
+            WHERE marketplace_connections.user_id = $1 AND marketplaces.name = $2`,
+            [userId, marketplace]
+        );
+
+        if (connection.rows.length === 0) {
+            return res.status(403).json({
+                error: 'Marketplace is not connected.'
+            });
+        }
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
