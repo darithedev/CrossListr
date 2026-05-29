@@ -1,16 +1,15 @@
 type TagProps = {
-    tags: string[];
+    tag: string;
+    category: 'status' | 'marketplace';
 }
 
-const Tag = ({ tags }: TagProps) => {
+const Tag = ({ tag, category }: TagProps) => {
 
     return (
         <div className="tag-container">
-            {tags.map((tag, index) => (
-                <span key={index} className="tag">
-                    {tag}
-                </span>
-            ))}
+            <span className={`${category}`}>
+                {tag}
+            </span>
         </div>
     )
 }
