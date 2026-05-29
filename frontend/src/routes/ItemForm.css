@@ -1,0 +1,23 @@
+.upload-box {
+  min-height: 160px;
+  padding: 1rem;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  background: var(--social-bg);
+  box-sizing: border-box;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.upload-box img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
