@@ -179,11 +179,14 @@ CORS is enabled for browser clients.
 
 **Backend (automated)**
 
-- `cd backend` — `npm test` is currently a placeholder (no suite yet).
+- `cd backend` — `npm test`
 
 **Frontend (automated)**
 
-- No test suite documented yet.
+- From `frontend/`, install dependencies if needed (`npm install`), then run tests:
+  ```bash
+  cd frontend
+  npm test
 
 **Backend (manual)**
 
