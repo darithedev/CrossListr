@@ -486,6 +486,14 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
             ORDER BY item_images.index_number ASC`,
             [id, userId]
         );
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            });
+        }
+
+        const rowObj = itemCheck.rows[0];
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
