@@ -1,16 +1,22 @@
 # CrossListr
 
-This repository is a full-stack **cross-listing / inventory** app built with PostgreSQL, Express, React + Vite, and Node. **Authentication** uses **JWT** (Bearer tokens) and **bcrypt**-hashed passwords: users can **sign up**, **log in**, and the SPA restores the session with **`GET /api/v1/auth/me`**. Once signed in, you see **your items** on the home screen (with the first image on each card), **open an item** for details, **create** a new item, or **edit** an existing one. The item form supports **Cloudinary** uploads (browser widget): images are stored as URLs in **`item_images`** (up to **12** per item, ordered by index). The API can **add**, **list**, and **delete** images; deleting renumbers indexes so they stay contiguous. Items support **metadata** such as title, description, category, condition, price, **source** (e.g. manual vs import), and optional **external_id**. **Deleting an item** via the API is only allowed when the item is still a **draft** with no active listing linkage (**`listings`** table exists for future cross-posting). The repo also includes optional **marketplace emulators** (FakeBay, Fakify, Faketsy) under **`emulators/`** for local dev; the main CrossListr server currently **does not** call those HTTP APIs in application code—**`FAKEBAY_*` / `FAKIFY_*` / `FAKETSY_*`** in Docker are reserved for upcoming platform integration.
+CrossListr is a full-stack **cross-listing / inventory** app built with PostgreSQL, Express, React + Vite, and Node. **Authentication** uses **JWT** (Bearer tokens) and **bcrypt**-hashed passwords: users can **sign up**, **log in**, and the SPA restores the session with **`GET /api/v1/auth/me`**. Once signed in, you manage **inventory** on the home screen (item cards with thumbnails), **create** and **edit** items, and view **item details**. Images upload via the **Cloudinary** browser widget and are stored as URLs in **`item_images`** (up to **12** per item, ordered by index).
 
- **Project Pitch**: [CrossListr Pitch](https://canva.link/g0ttkozy5jp026z)
+The MVP also supports **marketplace connections** and **crosslisting**: connect a **FakeBay** account (OAuth2 against the local FakeBay emulator), then **crosslist** draft items to FakeBay from the item details page. **Profile** shows read-only account fields; **Settings** lists FakeBay, Faketsy, and Fakify connect buttons (FakeBay is wired end-to-end). Optional **marketplace emulators** under **`emulators/`** stand in for eBay-, Shopify-, and Etsy-shaped APIs during local development.
 
- **GitHub Projects**: [Kanban](https://github.com/users/darithedev/projects/5)
+![](/frontend/public/CrossListr-Demo.gif)
+
+## Project Links
+
+**Project Pitch**: [CrossListr Pitch](https://canva.link/g0ttkozy5jp026z)
+
+**GitHub Projects**: [Kanban](https://github.com/users/darithedev/projects/5)
 
 ## Project stack
 
-- **`frontend/`** — React + Vite (package name `frontend`), UI with **React Bootstrap** and **React Router**; **Cloudinary** upload widget (script in `index.html`)
+- **`frontend/`** — React + Vite, **React Bootstrap** and **React Router**; **Cloudinary** upload widget (script in `index.html`); pages for auth, home, items, profile, and settings
 - **`backend/`** — Node.js + **Express 5** API + **`pg`**, **CORS** enabled; **JWT** auth on protected routes under **`/api/v1`**
-- **`migrations/`** — SQL migrations applied with **`postgres-migrations`** (used by Docker **`migrations`** service or run locally)
+- **`migrations/`** — SQL migrations applied with **`postgres-migrations`** (Docker **`migrations`** service or run locally)
 - **`emulators/`** — Dev-only HTTP stand-ins for eBay-, Shopify-, and Etsy-shaped APIs (see [`emulators/README.md`](emulators/README.md))
 
 ## Authentication (JWT)
@@ -35,22 +41,60 @@ Image files are uploaded **from the browser** with Cloudinary’s widget; only *
 
 The upload widget is loaded from Cloudinary’s CDN in [`frontend/index.html`](frontend/index.html).
 
-## Docker: Postgres + migrations + app
+## FakeBay integration (local dev)
 
-From the **repository root**, copy [`.env.example`](.env.example) to **`.env`** and set **`POSTGRES_*`**, **`DATABASE_URL`** (hostname **`postgres`** inside Compose), **`JWT_SECRET`**, **`VITE_API_URL`** (see below), and Cloudinary variables if you use uploads.
+Crosslisting to **FakeBay** requires the FakeBay emulator and OAuth env vars.
 
-```bash
-docker compose up -d --build
+### Environment variables
+
+In the repo root **`.env`** (copy from [`.env.example`](.env.example)), set at minimum:
+
+```text
+POSTGRES_USER=crosslistr
+POSTGRES_PASSWORD=replace_me
+POSTGRES_DB=crosslistr_db
+DATABASE_URL=postgresql://crosslistr:replace_me@postgres:5432/crosslistr_db
+JWT_SECRET=a-string-secret-at-least-256-bits-long
+VITE_API_URL=http://localhost:3000/api
+
+FAKEBAY_API_URL=http://fakebay-backend:8082
+FAKEBAY_AUTH_PUBLIC_URL=http://localhost:14181
+FAKEBAY_CLIENT_ID=dev-fakebay-client
+FAKEBAY_CLIENT_SECRET=dev-fakebay-secret
+FAKEBAY_REDIRECT_URI=http://localhost:3000/api/v1/connections/fakebay/callback
+FRONTEND_URL=http://localhost:5173
+VITE_FAKEBAY_AUTH_PUBLIC_URL=http://localhost:14181
 ```
+
+For **local frontend** (`npm run dev` without Docker), also add **`VITE_FAKEBAY_AUTH_PUBLIC_URL`** (and optionally **`VITE_FAKEBAY_CLIENT_ID`**) to **`frontend/.env`**.
+
+Inside Docker, the backend reaches FakeBay at **`http://fakebay-backend:8082`** on the shared network **`crosslistr-emulators-integration`**. Your browser uses published emulator ports (e.g. **`14181`** for FakeBay OAuth).
+
+### Start emulators, then CrossListr
+
+1. Create the shared Docker network and start FakeBay (or all emulators):
+
+   ```bash
+   docker compose -f emulators/compose.yaml up -d --build
+   ```
+
+   Or from **`emulators/fakebay/`**: `docker compose up -d --build` (see [`emulators/README.md`](emulators/README.md)).
+
+2. From the **repository root**:
+
+   ```bash
+   docker compose up -d --build
+   ```
 
 - **API** (host): [http://localhost:3000](http://localhost:3000)
 - **UI** (host): [http://localhost:5173](http://localhost:5173)
+- **FakeBay OAuth** (browser): [http://localhost:14181](http://localhost:14181) — dev login `demo@fakebay.local` / `demo`
 
 **Backend listen address:** inside Docker, **`LISTEN_HOST=0.0.0.0`** so the container accepts connections. For local **`npm run dev`** without Docker, the server defaults to **`127.0.0.1`** (see [`backend/src/server.js`](backend/src/server.js)).
 
-### Optional marketplace emulators
+### Other marketplace emulators
 
-To run FakeBay / Fakify / Faketsy stacks (published ports such as **`14180`**, **`14280`**, **`14380`**), see [`emulators/README.md`](emulators/README.md). Those docs describe a shared Docker network (**`crosslistr-emulators-integration`**) so the **CrossListr** backend can reach emulator hostnames (e.g. **`http://fakebay-backend:8082`**). Wire that network into Compose when you implement platform clients; **`docker-compose.yml`** already passes **`FAKEBAY_*`**, **`FAKIFY_*`**, and **`FAKETSY_*`** into the backend container for that future step.
+**Fakify** and **Faketsy** appear in Settings UI; **crosslisting** to them returns **501** until implemented. See [`emulators/README.md`](emulators/README.md) for ports and contracts.
 
 ## How to install frontend (local)
 
@@ -59,6 +103,7 @@ To run FakeBay / Fakify / Faketsy stacks (published ports such as **`14180`**, *
 3. Copy **`frontend/.env.example`** to **`frontend/.env`** and set:
    - **`VITE_API_URL`** — API base including **`/api`** but **without** trailing slash, e.g. `http://127.0.0.1:3000/api` (the app calls paths like **`${VITE_API_URL}/v1/items`**).
    - **`VITE_CLOUDINARY_CLOUD_NAME`** and **`VITE_CLOUDINARY_UPLOAD_PRESET`** if you use image upload.
+   - **`VITE_FAKEBAY_AUTH_PUBLIC_URL`** (e.g. `http://localhost:14181`) if you use FakeBay connect.
 4. `npm run dev`
 5. Open [http://localhost:5173](http://localhost:5173) and go to **`/login`** or **`/signup`**.
 
@@ -66,7 +111,7 @@ To run FakeBay / Fakify / Faketsy stacks (published ports such as **`14180`**, *
 
 1. `cd backend`
 2. `npm install`
-3. Copy **`backend/.env.example`** to **`backend/.env`** and set **`PORT`**, **`DATABASE_URL`**, and **`JWT_SECRET`**.
+3. Copy **`backend/.env.example`** to **`backend/.env`** and set **`PORT`**, **`DATABASE_URL`**, **`JWT_SECRET`**, and FakeBay vars if testing crosslisting (use **`localhost`** URLs and published emulator ports when not on the Docker network).
 4. Ensure PostgreSQL is running and **migrations** have been applied (see [Database setup](#database-setup)).
 5. `npm run dev` (nodemon). JSON API is mounted under **`/api/v1`**.
 
@@ -85,6 +130,8 @@ To run FakeBay / Fakify / Faketsy stacks (published ports such as **`14180`**, *
    ```
 
 4. Start the backend. If the database is unreachable, startup exits after the health check in [`backend/src/server.js`](backend/src/server.js).
+
+Migrations include **`marketplaces`**, **`marketplace_connections`**, and **`listings`** tables (seeded marketplace names: `fakebay`, `faketsy`, `fakify`).
 
 ## API routes
 
@@ -110,6 +157,15 @@ Base URL (local): `http://127.0.0.1:3000` (or your **`PORT`**). Versioned JSON r
 | `GET` | `/api/v1/items/:id/images` | List `{ image_url, index }` rows. |
 | `POST` | `/api/v1/items/:id/images` | Add image. Body: `{ image_url, index_number }`. Index **0–11** (max 12 images). |
 | `DELETE` | `/api/v1/items/:id/images/:image_id` | Delete image; **409** if item is not draft; reindexes remaining images. |
+| `GET` | `/api/v1/items/:id/listings` | Listings for the item: `[{ marketplace, status, external_id }, …]`. |
+| `POST` | `/api/v1/items/:id/crosslist/:marketplace` | Crosslist to **`fakebay`**, **`faketsy`**, or **`fakify`**. **FakeBay**: requires connection, posts to FakeBay seller API, inserts **`listings`** row, sets item **`status`** to **`listed`**. **409** if already listed; **403** if marketplace not connected. **501** for Faketsy/Fakify (not implemented). |
+
+**Connections**
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/connections` | Connected marketplaces for the user. **Bearer** required. Returns `[{ name: "fakebay" }, …]`. |
+| `GET` | `/api/v1/connections/:marketplace/callback` | OAuth callback (browser redirect). Exchanges code for tokens, stores **`marketplace_connections`**, redirects to **`/settings`**. **`state`** is a JWT carrying **`userId`**. |
 
 **Other**
 
@@ -135,20 +191,45 @@ CORS is enabled for browser clients.
 curl -s http://127.0.0.1:3000/health
 ```
 
-Use **`curl`** or Postman with `Authorization: Bearer <token>` for **`/api/v1/items`** and related routes after logging in or signing up.
+After login, use **`curl`** or Postman with `Authorization: Bearer <token>` for protected routes. Example flow:
+
+```bash
+# Log in
+curl -s -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"yourpassword"}'
+
+# List connections (replace TOKEN)
+curl -s http://localhost:3000/api/v1/connections \
+  -H "Authorization: Bearer TOKEN"
+
+# Crosslist to FakeBay (replace TOKEN and ITEM_ID)
+curl -s -X POST http://localhost:3000/api/v1/items/ITEM_ID/crosslist/fakebay \
+  -H "Authorization: Bearer TOKEN"
+```
 
 **Frontend**
 
-- Run the dev server, sign up or log in, then exercise **`/home`**, **`/items/new`**, **`/items/:id`**, and **`/items/:id/edit`**.
+1. Sign up or log in at **`/signup`** or **`/login`**.
+2. **Profile** — from Home, open Profile; confirm name, email, phone.
+3. **Settings** — connect FakeBay (OAuth); button shows connected after redirect.
+4. Create or open an item; on **Item details**, use **Crosslist to Fakebay** when connected.
+5. Confirm marketplace tags and listing on the FakeBay emulator UI.
 
 ## How to use the app
 
 1. **Account** — Open **`/signup`** or **`/login`**. After success you land on **`/home`** with a JWT in **`localStorage`**.
-2. **Home** — Lists your item cards (thumbnail = first image). **Select** opens details; **Edit** opens the form.
-3. **New / edit item** — Fill in listing fields; use **Cloudinary** to attach images (subject to preset and env). The form syncs metadata and image rows with the API.
-4. **Details** — Read-only view of an item and its images.
-5. **Logout** — Clears token and user context (home screen).
-6. **Not implemented in the UI yet** — Item **delete** exists on the API for draft items only; cross-posting to marketplaces via **`listings`** and the **`emulators/`** stacks is not wired in the application layer.
+2. **Home** — Lists your item cards (thumbnail = first image). Click a card for details; use **Edit** on the card for the form. **Profile** and **Logout** are in the header actions.
+3. **Profile** (`/profile`) — Read-only name, email, and phone; links to Home and Settings.
+4. **Settings** (`/settings`) — Connect **FakeBay** (redirects to emulator OAuth). Faketsy and Fakify buttons are present; only FakeBay OAuth is fully wired.
+5. **New / edit item** — Fill listing fields; use **Cloudinary** for images. New items start as **draft**.
+6. **Details** (`/items/:id`) — View item and images; **List on marketplaces** shows crosslist actions or active listing tags. **Crosslist to Fakebay** requires a FakeBay connection; unconnected marketplaces link to Settings.
+7. **Logout** — Clears token and user context.
+
+**Not in the UI yet**
+
+- Item **delete** exists on the API for draft items only (no delete button in the SPA).
+- Crosslisting to **Faketsy** and **Fakify** (API returns **501**).
 
 **Example `GET /api/v1/items/:id` response shape:**
 
@@ -167,6 +248,16 @@ Use **`curl`** or Postman with `Authorization: Bearer <token>` for **`/api/v1/it
   "images": [
     { "image_id": 1, "url": "https://res.cloudinary.com/…", "index": 0 }
   ]
+}
+```
+
+**Example `POST /api/v1/items/:id/crosslist/fakebay` success:**
+
+```json
+{
+  "marketplace": "fakebay",
+  "status": "listed",
+  "external_id": "42"
 }
 ```
 
