@@ -201,7 +201,7 @@ const ItemDetails = () => {
 
                             if (externalId) {
                                 return (
-                                    <div>
+                                    <div key={marketplace}>
                                         <Tag tag={marketplaceName} category={'marketplace'}/>
                                         <Tag tag={'active'} category={'status'} />
                                         <span>Id: {externalId}</span>
