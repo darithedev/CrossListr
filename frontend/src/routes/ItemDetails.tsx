@@ -168,7 +168,13 @@ const ItemDetails = () => {
     return (
         <div className="details-container">
             {isLoading ? (
-                <p className="details-loading">Loading...</p>
+                <p 
+                    className="details-loading"
+                    role="status" 
+                    aria-live="polite"
+                >
+                    Loading...
+                </p>
             ) :  (item && (
                     <>
                         <h2 className="details-header">{item.title}</h2>
@@ -176,7 +182,11 @@ const ItemDetails = () => {
                             <p className="details-label">Images</p>
                             <div className="details-images">
                                 {item.item_images?.map((url, i) => (
-                                    <img key={`${i}`} src={url} alt="" />
+                                    <img 
+                                        key={`${i}`}
+                                        src={url} 
+                                        alt={`${item.title}, image ${i + 1} of ${item.item_images.length}`}
+                                    />
                                 ))}
                             </div>
                         </section>

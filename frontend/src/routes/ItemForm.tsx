@@ -305,10 +305,11 @@ const ItemForm = () => {
                 <div className="upload-box">
                     {itemData.item_images.map((img, index) => (
                         <div key={`${index}`} className="upload-thumb">
-                            <img src={img.url} alt=""/>
+                            <img src={img.url} alt="image"/>
                             <button 
                                 type="button"
                                 className="remove-image"
+                                aria-label={`Remove photo ${index + 1}`}
                                 onClick={() => handleRemoveImage(index)}
                                 >
                                     x
