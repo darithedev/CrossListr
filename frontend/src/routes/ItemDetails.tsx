@@ -47,6 +47,9 @@ const ItemDetails = () => {
     const marketplaces = ['fakebay', 'faketsy', 'fakify'];
     const [connections, setConnections] = useState<string[]>([]);
 
+    const [listings, setListings] = useState<ItemListing[]>([]);
+    const [isCrosslisting, setIsCrosslisting] = useState(false);
+
     useEffect(() => {
         if (!id) {
             setIsLoading(false);
@@ -111,12 +114,30 @@ const ItemDetails = () => {
         try {
             if (!id || !connections.includes(marketplace)) return;
 
+            setIsCrosslisting(true);
+
             const { data } = await axios.post(
                 `${API_URL}/v1/items/${id}/crosslist/${marketplace}`,
-                { authHeaders }
-            )
+                {},
+                { headers: authHeaders() }
+            );
+
+            if (data.external_id) {
+                setListings((prev) => [
+                    ...prev.filter((listing) => listing.marketplace !== marketplace),
+                    {
+                        marketplace,
+                        status: 'listed',
+                        external_id: data.external_id
+                    },
+                ]);
+            }
+            alert(`Successfully listed on ${marketplace}!`);
         } catch (error) {
             console.error('Failed to crosslist listing:', error);
+            alert('Error! Could not list on Fakebay.');
+        } finally {
+            setIsCrosslisting(false);
         }
     }
 
