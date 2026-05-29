@@ -494,6 +494,26 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
         }
 
         const rowObj = itemCheck.rows[0];
+
+        const images = itemCheck.rows
+            .filter((row) => row.image_url != null)
+            .map((row) => ({
+                image_id: row.image_id,
+                url: row.image_url,
+                index: row.index_number
+            }))
+            .sort((a, b) => a.index - b.index);
+
+        const listing = {
+            id: rowObj.id,
+            images,
+            title: rowObj.title,
+            description: rowObj.description,
+            category: rowObj.category,
+            condition: rowObj.condition,
+            price: rowObj.price,
+            status: rowObj.status
+        };
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
