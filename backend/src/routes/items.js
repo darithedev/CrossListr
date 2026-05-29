@@ -7,6 +7,7 @@ const router = express.Router();
 
 const marketplaces = ['fakebay', 'faketsy', 'fakify'];
 
+// CRUD for items
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -269,6 +270,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// CRUD for item images
 router.get('/:id/images', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -445,6 +447,7 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
     }
 });
 
+// CRUD for item listings
 router.get('/:id/listings', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -494,6 +497,7 @@ router.get('/:id/listings', authMiddleware, async (req, res) => {
     }
 });
 
+// CRUD for item crosslisting
 router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
