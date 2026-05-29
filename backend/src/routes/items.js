@@ -462,7 +462,10 @@ router.get('/:id/listings', authMiddleware, async (req, res) => {
             });
         }
     } catch (error) {
-        
+        console.error('GET /items/:id/listings:', error);
+        return res.status(500).json({
+            error: 'Error! Could not GET all listings for this item.'
+        });
     }
 });
 
