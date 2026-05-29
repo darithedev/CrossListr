@@ -538,6 +538,37 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
         const { access_token, marketplace_id } = connection.rows[0];
 
         let externalId;
+
+        if (marketplace === 'fakebay') {
+            const response = await fetch(`http://fakebay-backend:8082/api/v1/seller/listings`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: listing.title,
+                    description: listing.description || '',
+                    priceCents: Math.round(Number(listing.price) * 100),
+                    currency: 'USD',
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('POST /items/:id/crosslist/:marketplace failed:', data);
+                return res.status(500).json({
+                    error: 'Error! Could not crosslist this item.'
+                });
+            }
+
+            externalId = String(data.id);
+        } else {
+            return res.status(501).json({
+                error: `Crosslisting to marketplace ${marketplace} is not yet available.`,
+            });
+        }
     } catch (error) {
         console.error('POST /items/:id/crosslist/:marketplace failed:', error);
         return res.status(500).json({
