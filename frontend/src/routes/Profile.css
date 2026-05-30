@@ -1,0 +1,73 @@
+.profile-form {
+    width: 100%;
+    max-width: 520px;
+    margin: 2rem auto 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.profile-header {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #1E3F74;
+    margin: 0 0 1.5rem 0;
+}
+
+.profile-form .form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0.9rem 0 0.4rem 0;
+    color: #1E3F74;
+}
+
+.profile-form .form-control {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+    border: 2px solid rgba(182, 187, 200, 0.2);
+    border-radius: 0.5rem;
+    background-color: #F6F7F9;
+}
+
+.profile-form .form-control:disabled {
+    color: #5A6B7D;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.profile-button-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.profile-button {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    background-color: #2099A9;
+    color: #ffffff;
+    border: none;
+}
+
+.profile-button:hover {
+    opacity: 0.92;
+    box-shadow: 0 4px 12px rgba(32, 153, 169, 0.25);
+}
+
+.profile-button-secondary {
+    background-color: #ffffff;
+    color: #2099A9;
+    border: 2px solid #2099A9;
+}
+
+.profile-button-secondary:hover {
+    background-color: #2099A9;
+    color: #ffffff;
+}

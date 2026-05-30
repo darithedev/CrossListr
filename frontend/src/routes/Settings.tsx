@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import './Settings.css'
 
 const API_URL = import.meta.env.VITE_API_URL;
 const FAKEBAY_URL = import.meta.env.VITE_FAKEBAY_AUTH_PUBLIC_URL;
@@ -53,21 +54,26 @@ const Settings = () => {
     };
 
     const faketsyConnection = () => {
+        alert("Connection to Faketsy coming soon!");
+    };
 
+    const fakifyConnection = () => {
+        alert("Connection to Fakify coming soon!");
     };
 
     return (
         <div className="settings-container">
-            <h1>Settings</h1>
-            <div className="integration">
-                <h3>Integration</h3>
+            <h1 className="settings-header">Settings</h1>
+            <div className="integration-section">
+                <h3 className="integration-title">Integration</h3>
                 {fakebayConnected ? (
-                    <button type="button" disabled>Connected to Fakebay</button>
+                    <button type="button" disabled className="settings-button settings-button-connected">Connected to Fakebay</button>
                 ) : (
-                    <button type="button" onClick={fakebayConnection}>Connect to Fakebay</button>
+                    <button type="button" className="settings-button" onClick={fakebayConnection}>Connect to Fakebay</button>
                 )}
-                <button type="button" onClick={faketsyConnection}>Connect to Faketsy</button>
-                <button type="button" onClick={() => navigate('/profile')}>Back</button>
+                <button type="button" className="settings-button" onClick={faketsyConnection}>Connect to Faketsy</button>
+                <button type="button" className="settings-button" onClick={fakifyConnection}>Connect to Fakify</button>
+                <button type="button" className="settings-button settings-button-secondary" onClick={() => navigate('/profile')}>Back</button>
             </div>
         </div>
     )

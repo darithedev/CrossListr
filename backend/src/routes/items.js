@@ -1,9 +1,13 @@
 import express from 'express'
 import pool from '../db/pools.js'
 import authMiddleware from '../middleware/authMiddleware.js';
+import { getFakebayAccessToken } from '../services/marketplaceTokens.js';
 
 const router = express.Router();
 
+const marketplaces = ['fakebay', 'faketsy', 'fakify'];
+
+// CRUD for items
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -266,6 +270,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// CRUD for item images
 router.get('/:id/images', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
@@ -438,6 +443,208 @@ router.delete('/:id/images/:image_id', authMiddleware, async (req, res) => {
         console.error('DELETE /items/:id/images/:image_id failed:', error);
         return res.status(500).json({
             error: 'Could not delete this image.'
+        });
+    }
+});
+
+// CRUD for item listings
+router.get('/:id/listings', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } 
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'invalid item id.'
+            });
+        }
+
+        const itemCheck = await pool.query(
+            `SELECT id, status FROM items WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        )
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            });
+        }
+
+        const result = await pool.query(
+            `SELECT 
+                marketplaces.name AS marketplace,
+                listings.status,
+                listings.external_id
+            FROM listings
+            JOIN marketplaces ON marketplaces.id = listings.marketplace_id
+            JOIN items ON items.id = listings.item_id
+            WHERE listings.item_id = $1 AND items.user_id = $2`,
+            [id, userId]
+        );
+
+        return res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('GET /items/:id/listings:', error);
+        return res.status(500).json({
+            error: 'Error! Could not GET all listings for this item.'
+        });
+    }
+});
+
+// CRUD for item crosslisting
+router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id, marketplace } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthenticated user.'
+            });
+        } 
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                error: 'Invalid item id.'
+            });
+        }
+
+        if (!marketplaces.includes(marketplace)) {
+            return res.status(400).json({
+                error: 'Invalid marketplace name.'
+            });
+        }
+
+        // Checks if item is owned by user and select required fields for listing
+        const itemCheck = await pool.query(
+            `SELECT
+                items.id,
+                items.title, 
+                items.description, 
+                items.category, 
+                items.condition, 
+                items.price,
+                items.status,
+                item_images.id AS image_id,
+                item_images.image_url,
+                item_images.index_number
+            FROM items 
+            LEFT JOIN item_images ON item_images.item_id = items.id
+            WHERE items.id = $1 AND items.user_id = $2
+            ORDER BY item_images.index_number ASC`,
+            [id, userId]
+        );
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({
+                error: "Item not found for this user."
+            });
+        }
+
+        const rowObj = itemCheck.rows[0];
+
+        const images = itemCheck.rows
+            .filter((row) => row.image_url != null)
+            .map((row) => ({
+                image_id: row.image_id,
+                url: row.image_url,
+                index: row.index_number
+            }))
+            .sort((a, b) => a.index - b.index);
+
+        const listing = {
+            id: rowObj.id,
+            images,
+            title: rowObj.title,
+            description: rowObj.description,
+            category: rowObj.category,
+            condition: rowObj.condition,
+            price: rowObj.price,
+            status: rowObj.status
+        };
+
+        if (listing.status === 'listed') {
+            return res.status(409).json({
+                error: 'This item is already listed.',
+            });
+        }
+
+        if (marketplace === 'fakebay') {
+
+            const connection = await getFakebayAccessToken(userId);
+
+            if (!connection) {
+                return res.status(403).json({
+                    error: "Marketplace is not connected."
+                });
+            }
+
+            const { access_token, marketplace_id } = connection;
+
+            const response = await fetch(`http://fakebay-backend:8082/api/v1/seller/listings`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: listing.title,
+                    description: listing.description || '',
+                    priceCents: Math.round(Number(listing.price) * 100),
+                    currency: 'USD',
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('POST /items/:id/crosslist/:marketplace failed:', data);
+                return res.status(500).json({
+                    error: 'Error! Could not crosslist this item.'
+                });
+            }
+
+            const externalId = String(data.id);
+
+            await pool.query(
+                `INSERT INTO listings (item_id, marketplace_id, status, external_id)
+                VALUES ($1, $2, $3, $4)`,
+                [id, marketplace_id, 'listed', externalId]
+            );
+
+            await pool.query(
+                `UPDATE items SET status = 'listed', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+                [id, userId]
+            );
+
+            return res.status(200).json({
+                marketplace,
+                status: 'listed',
+                external_id: externalId,
+            });
+        } else if (marketplace === 'faketsy') {
+            return res.status(501).json({
+                error: 'Crosslisting to Faketsy is not yet available.',
+            });
+        } else if (marketplace === 'fakify') {
+            return res.status(501).json({
+                error: 'Crosslisting to Fakify is not yet available.',
+            });
+        }
+
+        return res.status(501).json({
+            error: `Crosslisting to marketplace ${marketplace} is not yet available.`,
+        });
+    } catch (error) {
+        console.error('POST /items/:id/crosslist/:marketplace failed:', error);
+        return res.status(500).json({
+            error: 'Error! Could not crosslist this item.'
         });
     }
 });
