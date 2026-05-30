@@ -8,9 +8,13 @@ The MVP also supports **marketplace connections** and **crosslisting**: connect 
 
 ## Project Links
 
+**Live Deployment**: [CrossListr on Render](https://crosslistr-frontend.onrender.com)
+
 **Project Pitch**: [CrossListr Pitch](https://canva.link/g0ttkozy5jp026z)
 
 **GitHub Projects**: [Kanban](https://github.com/users/darithedev/projects/5)
+
+**Demo Video**: [CrossListr Demo](https://youtu.be/WAiE8o-zgPs)
 
 ## Project stack
 
