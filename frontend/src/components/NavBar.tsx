@@ -55,6 +55,13 @@ const NavBar = () => {
                             <Button
                                 variant="outline-danger"
                                 className="navbar-button"
+                                onClick={() => navigate('/profile')}
+                            >
+                                Profile
+                            </Button>
+                            <Button
+                                variant="outline-danger"
+                                className="navbar-button"
                                 onClick={handleLogout}
                             >
                                 Logout
