@@ -7,6 +7,8 @@ const router = express.Router();
 
 const marketplaces = ['fakebay', 'faketsy', 'fakify'];
 
+const FAKEBAY_API_URL = process.env.FAKEBAY_API_URL;
+
 // CRUD for items
 router.get('/', authMiddleware, async (req, res) => {
     try {
@@ -587,7 +589,7 @@ router.post('/:id/crosslist/:marketplace', authMiddleware, async (req, res) => {
 
             const { access_token, marketplace_id } = connection;
 
-            const response = await fetch(`http://fakebay-backend:8082/api/v1/seller/listings`, {
+            const response = await fetch(`${FAKEBAY_API_URL}/api/v1/seller/listings`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${access_token}`,
