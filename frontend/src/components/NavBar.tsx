@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from 'react-bootstrap'
 import { UserContext } from '../context/UserContext'
+import './NavBar.css'
 
 const NavBar = () => {
     const auth = useContext(UserContext);
