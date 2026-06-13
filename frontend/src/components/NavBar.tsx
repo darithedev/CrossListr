@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 
 const NavBar = () => {
@@ -19,7 +19,16 @@ const NavBar = () => {
 
     return (
         <div className="navbar-container">
-            
+            <div className="navbar">
+                <div className="navbar-left">
+                    <Link
+                        to={user ? '/home' : '/login'}
+                        className="navbar-crosslistr"
+                    >
+                        CrossListr
+                    </Link>
+                </div>
+            </div>
         </div>
     )
 }
