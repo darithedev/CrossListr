@@ -47,6 +47,31 @@ const NavBar = () => {
                         </>
                     )}
                 </div>
+                <div className="navbar-right">
+                    {loading ? (
+                        <span className="loading">...</span>
+                    ) : user ? (
+                        <>
+                            <Button
+                                variant="outline-danger"
+                                className="navbar-button"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="navbar-link">
+                                Login
+                            </Link>
+                            <Link to="/signup" className="navbar-link">
+                                Sign up
+                            </Link>
+                        </>
+                    )
+                }
+                </div>
             </div>
         </div>
     )
