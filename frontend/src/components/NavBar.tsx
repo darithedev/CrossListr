@@ -41,6 +41,9 @@ const NavBar = () => {
                             >
                                 Add Item
                             </Button>
+                            <Link to='/home' className='navbar-link'>
+                                All items
+                            </Link>
                         </>
                     )}
                 </div>
