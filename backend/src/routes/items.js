@@ -7,6 +7,8 @@ const router = express.Router();
 
 const marketplaces = ['fakebay', 'faketsy', 'fakify'];
 
+const FAKEBAY_API_URL = process.env.FAKEBAY_API_URL;
+
 // CRUD for items
 router.get('/', authMiddleware, async (req, res) => {
     try {
