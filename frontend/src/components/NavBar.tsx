@@ -10,6 +10,8 @@ const NavBar = () => {
         return null
     }
 
+    const { user, logout, loading } = auth
+
     return (
         <div className="navbar-container">
             
