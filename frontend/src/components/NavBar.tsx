@@ -12,6 +12,11 @@ const NavBar = () => {
 
     const { user, logout, loading } = auth
 
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    }
+
     return (
         <div className="navbar-container">
             
