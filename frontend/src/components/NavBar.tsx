@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Button } from 'react-bootstrap'
 import { UserContext } from '../context/UserContext'
 
 const NavBar = () => {
@@ -33,6 +34,13 @@ const NavBar = () => {
                             <Link to='/home' className="navbar-link">
                                 Dashboard
                             </Link>
+                            <Button
+                                variant='outline-primary'
+                                className='navbar-button'
+                                onClick={() => navigate('/items/new')}
+                            >
+                                Add Item
+                            </Button>
                         </>
                     )}
                 </div>
