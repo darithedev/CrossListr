@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserContext } from '../context/UserContext'
 import ItemCard from '../components/ItemCard';
 import axios from 'axios'
 import './Home.css'
@@ -60,7 +59,6 @@ function normalizeItems(rows: NormalizeItem[]): Items {
 
 const Home = () => {
     const navigate = useNavigate();
-    const auth = useContext(UserContext);
 
     // Items are pulled from GET /items endpoint
     const [items, setItems] = useState<Items>([]);
@@ -80,27 +78,8 @@ const Home = () => {
         getItems();
     }, []);
 
-    const handleLogout = () => {
-        auth?.logout();
-        navigate('/login');
-    }
     return (
         <div className="home-container">
-            <div className="home-button-section">
-                <button 
-                    onClick={() => navigate('/profile')}
-                    className="home-button"
-                >
-                    Profile
-                </button>
-                <button 
-                    onClick={() => handleLogout()}
-                    className="home-button"
-                >
-                    Logout
-                </button>
-            </div>
-            
             <ItemCard items={items}/>
 
             <button 
