@@ -27,6 +27,14 @@ const NavBar = () => {
                     >
                         CrossListr
                     </Link>
+
+                    {user && (
+                        <>
+                            <Link to='/home' className="navbar-link">
+                                Dashboard
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
