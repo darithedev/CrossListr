@@ -8,23 +8,27 @@ import ItemForm from './routes/ItemForm'
 import ItemDetails from './routes/ItemDetails'
 import Profile from './routes/Profile'
 import Settings from './routes/Settings'
+import NavBar from './components/NavBar'
 
 function App() {
   return (
-    <Routes>
-      <Route element={<ProtectedRoute />} >
-        <Route path="home" element={<Home />} />
-        <Route path="/profile" element={<Profile /> } />
-        <Route path="/settings" element={<Settings /> } />
-        <Route path="/items/new" element={<ItemForm />} />
-        <Route path="/items/:id/edit" element={<ItemForm />} />
-        <Route path="/items/:id" element={<ItemDetails />} />
-      </Route>
+    <>
+      <NavBar />
+      <Routes>
+        <Route element={<ProtectedRoute />} >
+          <Route path="home" element={<Home />} />
+          <Route path="/profile" element={<Profile /> } />
+          <Route path="/settings" element={<Settings /> } />
+          <Route path="/items/new" element={<ItemForm />} />
+          <Route path="/items/:id/edit" element={<ItemForm />} />
+          <Route path="/items/:id" element={<ItemDetails />} />
+        </Route>
 
-      <Route path="/" element={<Navigate to="/signup" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-    </Routes>
+        <Route path="/" element={<Navigate to="/signup" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </>
   )
 }
 
